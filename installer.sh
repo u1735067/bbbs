@@ -9,14 +9,14 @@ borg_bin=$dir_exec/borg.bin
 
 dir_cache=/var/cache/borg
 
-borg_retreive_check() {
+borg_retrieve_check() {
 	tmpdir=$(mktemp --directory)
 	pushd $tmpdir > /dev/null
 
-	echo "-- Retreiving binary"
+	echo "-- Retrieving binary & signature"
 	curl --silent https://api.github.com/repos/borgbackup/borg/releases/latest \
 	  | jq --raw-output '.assets[] | select(.name as $asset | ["'$borg_exec'", "'$borg_exec_sig'"] | index($asset)) | .browser_download_url' \
-	  | wget --quiet --input-file=-
+	  | xargs --max-args=1 --max-procs=2 curl --silent --remote-name
 
 	echo "-- Checking signature"
 
@@ -41,10 +41,10 @@ borg_retreive_check() {
 borg_install_client() {
 	echo "- Installing Borg (client)"
 	# Ideally, the server version should be pushed
-	borg_retreive_check
+	borg_retrieve_check
 
 	echo "-- Creating user"
-	useradd --system --create-home  --gid backup --shell "/bin/bash" --skel /dev/null --password '*' $borg_user
+	useradd --system --create-home --gid backup --shell "/bin/bash" --skel /dev/null --password '*' $borg_user
 
 	dir_home=~borg
 	dir_conf=$dir_home
@@ -85,7 +85,7 @@ borg_install_server() {
 	#dir_security=$dir_conf/security
 
 	echo "- Installing Borg (server)"
-	borg_retreive_check
+	borg_retrieve_check
 
 	echo "-- Creating user"
 	#adduser --system              --home "$dir_home"   --ingroup backup --shell "/bin/bash" --disabled-login .....
@@ -105,8 +105,9 @@ borg_install_server() {
 
 	echo "-- Sudoers rules"
 	cat <<EOF
-The following sudoers (run visudo) rules are required, it allows the user borg
-to run /opt/borg/borg.bin as root (with BORG_* environment variables kept):
+The following sudoers (run visudo) rules are required, it allows the admins
+to run /opt/borg/borg.bin and the server wrapper as borg (keeping required 
+environment variables):
 
 # Borg server
 Defaults>borg env_keep += "BORG_* BORGW_* SSH_*"
@@ -120,7 +121,8 @@ EOF
 
 borg_update() {
 	echo "- Updating Borg"
-	borg_retreive_check
+	borg_retrieve_check
+	echo "- Done."
 }
 
 borg_uninstall() {
@@ -133,6 +135,7 @@ borg_uninstall_with_user() {
 	borg_uninstall
 	echo "-- Removing user and homedir"
 	userdel --remove $borg_user
+	echo "- Done."
 }
 
 case "$1" in
@@ -142,11 +145,12 @@ case "$1" in
 	install-server)
 		borg_install_server
 		;;
-	uninstall)
-		borg_uninstall
-		;;
 	update)
 		borg_update
+		;;
+	uninstall)
+		borg_uninstall
+		echo "- Done."
 		;;
 	uninstall-with-user)
 		borg_uninstall_with_user
