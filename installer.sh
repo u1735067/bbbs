@@ -182,6 +182,8 @@ https://stackoverflow.com/questions/9120512/verify-gpg-signature-without-install
 
 https://stackoverflow.com/questions/43158140/way-to-create-multiline-comments-in-bash
 
+https://stackoverflow.com/questions/19306771/get-current-users-username-in-bash
+
 --
 
 https://linux.die.net/man/8/sudo
