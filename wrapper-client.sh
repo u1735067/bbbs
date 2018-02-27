@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+
+# This wrapper replace the ssh client on the client
 if [ $# -lt 2 ]; then
   echo "usage: [-s|--socket] uds-target.sock | [-t|--tcp] port"
 elif [ "$1" == '-s' -o "$1" == '--socket' ]; then

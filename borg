@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+# You can place this file in /root/bin/
+# It will launch borg for you with the right user
+
+borg_path=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
+borg_user=borg
+
+if [ "$(id --user --name)" != "$borg_user" ]; then # logname / whoami
+	echo "Executing as $borg_user"
+	exec sudo -u $borg_user $borg_path/borg.bin "$@"
+else
+	exec $borg_path/borg.bin "$@"
