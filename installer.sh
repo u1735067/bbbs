@@ -61,8 +61,8 @@ borg_install_client() {
 	ln -s "$dir_conf" "$dir_home/.config/borg"
 	ln -s "$dir_cache" "$dir_home/.cache/borg"
 	ln -s "$dir_home/.ssh" "$dir_home/ssh"
-	chown $borg_user $borg_bin
-	chown -R $borg_user "$dir_home"
+	chown --reference "$dir_home" $borg_bin
+	chown --recursive --reference "$dir_home" "$dir_home"
 
 	echo "-- Sudoers rules"
 	cat <<EOF
@@ -100,8 +100,8 @@ borg_install_server() {
 	ln -s "$dir_conf" "$dir_home/.config/borg"
 	ln -s "$dir_cache" "$dir_home/.cache/borg"
 	ln -s "$dir_home/.ssh" "$dir_home/ssh"
-	chown $borg_user $borg_bin
-	chown -R $borg_user "$dir_home" "$dir_cache"
+	chown --reference "$dir_home" $borg_bin
+	chown --recursive --reference "$dir_home" "$dir_home" "$dir_cache"
 
 	echo "-- Sudoers rules"
 	cat <<EOF

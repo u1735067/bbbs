@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+usage() {
+	echo "usage: $0 [-h|--help] [-g|--generate] -k|--key-name host_key_name [-c|--copy -u|--user user_to_add_key] -- ssh_arguments"
+	exit
+}
+
+if [ $# = 0 ] ; then
+	usage
+fi
+
+while [ "$#" -gt 0 ]
+do
+	case "$1" in
+		-g|--generate)
+			DO_GEN=1
+			shift 1
+			;;
+		-c|--copy)
+			DO_COPY=1
+			shift 1
+			;;
+		-u|--user)
+			COPY_USER="$2"
+			shift 2
+			;;
+		-k|--key-name)
+			KEY_NAME="$2"
+			shift 2
+			;;
+		-h|--help)
+			usage
+			;;
+		--)
+			shift
+			break
+			;;
+		-*)
+			printf "\n%s: ERROR: invalid option (%s)\n\n" "$0" "$1"
+			usage
+			;;
+	esac
+done
+#eval set -- "$SSH_ARGS"
+
+# https://stackoverflow.com/questions/3601515/how-to-check-if-a-variable-is-set-in-bash
+if [ -z ${KEY_NAME:+x} -o '(' ! -z ${COPY_USER:+x} -a -z ${@:+x} ')' ]; then
+	printf '%s: ERROR: Missing arguments.\n\n' >&2
+	usage
+fi
+
+pushd ~borg > /dev/null
+
+if [ ${DO_GEN:-0} -eq 1 ]; then
+	echo "-- Generating key pair"
+	# https://security.stackexchange.com/questions/50878/ecdsa-vs-ecdh-vs-ed25519-vs-curve25519
+	#ssh-keygen -b 4096 -C "Borg server ($(hostname))"
+	ssh-keygen -t ed25519 -N '' -C "Borg server ($(hostname --fqdn))" -f "ssh/id_$KEY_NAME"
+fi
+if [ ${DO_COPY:-0} -eq 1 ]; then
+	echo "-- Adding public key to authorized_keys on client (for user $COPY_USER)"
+	# https://github.com/andrewpile/ssh-copy-id/blob/master/ssh-copy-id
+	cat "ssh/id_${KEY_NAME}.pub" | ssh "$@" -- \
+		"umask 077;" \
+		"test -d ~$COPY_USER || (echo 'Home for $COPY_USER not found'; exit);" \
+		"cd ~$COPY_USER; test -d .ssh || mkdir .ssh;" \
+		"cat >> .ssh/authorized_keys;" \
+		"chown --recursive --reference ~$COPY_USER .ssh" \
+		"echo Ok"
+fi
+
+popd > /dev/null
