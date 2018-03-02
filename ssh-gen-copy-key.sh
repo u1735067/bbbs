@@ -56,6 +56,7 @@ if [ ${DO_GEN:-0} -eq 1 ]; then
 	# https://security.stackexchange.com/questions/50878/ecdsa-vs-ecdh-vs-ed25519-vs-curve25519
 	#ssh-keygen -b 4096 -C "Borg server ($(hostname))"
 	ssh-keygen -t ed25519 -N '' -C "Borg server ($(hostname --fqdn))" -f "ssh/${KEY_NAME}.key"
+	chown --recursive --reference ~borg "ssh/"
 fi
 if [ ${DO_COPY:-0} -eq 1 ]; then
 	echo "-- Adding public key to authorized_keys on client (for user $COPY_USER)"
@@ -67,6 +68,17 @@ if [ ${DO_COPY:-0} -eq 1 ]; then
 		"cat >> .ssh/authorized_keys ;" \
 		"chown --recursive --reference ~$COPY_USER .ssh ;" \
 		"echo Ok"
+	
+	# Prepare known_hosts if not existing
+	if [ ! -f "ssh/known_hosts" ]; then
+		touch "ssh/known_hosts"
+		chown --recursive --reference ~borg "ssh/known_hosts"
+	fi
+	echo
+	echo "Don't forget to add remote host to known hosts for user borg, using"
+	echo "ssh-keygen -F '[host]:port' >> ~borg/ssh/known_hosts"
+	echo "or"
+	echo "ssh-keygen -F 'host' >> ~borg/ssh/known_hosts"
 fi
 
 popd > /dev/null
