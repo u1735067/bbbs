@@ -76,9 +76,9 @@ if [ ${DO_COPY:-0} -eq 1 ]; then
 	fi
 	echo
 	echo "Don't forget to add remote host to known hosts for user borg, using"
-	echo "ssh-keygen -F '[host]:port' >> ~borg/ssh/known_hosts"
+	echo "ssh-keygen -F '[host]:port' | sed '/^#/d' >> ~borg/ssh/known_hosts"
 	echo "or"
-	echo "ssh-keygen -F 'host' >> ~borg/ssh/known_hosts"
+	echo "ssh-keygen -F 'host' | sed '/^#/d' >> ~borg/ssh/known_hosts"
 fi
 
 popd > /dev/null

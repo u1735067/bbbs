@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+
+# https://borgbackup.readthedocs.io/en/stable/usage/create.html
+# https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-help-patterns
+# https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-help-placeholders
+# https://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.html
+# http://www.pathname.com/fhs/pub/fhs-2.3.html
+# https://manpages.debian.org/stretch/manpages-fr-extra/date.1.fr.html
+
+# https://borgbackup.readthedocs.io/en/stable/faq.html#i-am-seeing-a-added-status-for-an-unchanged-file
+# https://borgbackup.readthedocs.io/en/stable/faq.html#it-always-chunks-all-my-files-even-unchanged-ones
+
+# Differentiated targets / dataset:
+# sys = / /boot /etc /opt /srv /var -/var/log
+# homes = /root /home
+# logs = /var/log
+
+COMMON_TARGET="/ /boot /etc /root /home /opt /srv /var /var/log"
+COMMON_EXCLUDE="--exclude /sys/ --exclude /proc/ --exclude /dev/ --exclude /run/ --exclude /var/run/ --exclude /mnt/"
+VOLATILE_EXCLUDE="--exclude /tmp/ --exclude /var/tmp/ --exclude /lost+found --exclude /var/cache/ --exclude /home/*/.cache"
+# Especially when not using --one-file-system
+# --exclude /var/run # -> /run
+
+pushd ~ > /dev/null
+
+## Global
+export BORGW_APPEND_ONLY=1
+
+## Per client
+hypervisor() {
+  # Hypervisor - https://pve.proxmox.com/wiki/Linux_Container
+  export BORGW_RESTRICT_REPOSITORY=/srv/borg/server-name/hypervisor
+  export SSH_ARGS=
+
+  host=server-name.fqdn
+  port=22
+  ssh_key=~/ssh/server-name_hypervisor.key
+  log_file="logs/"$(date --utc "+%Y-%m-%d_%H.%M.%SZ")"_$host.log"
+
+  /opt/borg/ssh-wrapper-server -t 12345 12345 /opt/borg/ssh-wrapper-client "$host -p $port -oBatchMode=yes -i$ssh_key" \
+    sudo /opt/borg/borg-client create \
+      --show-version --show-rc --verbose --list --stats --one-file-system --keep-exclude-tags \
+      $COMMON_EXCLUDE $VOLATILE_EXCLUDE \
+      --exclude /var/lib/lxcfs/ \
+      --exclude /var/lib/vz/images/ \
+      ssh://backup-server/./::{utcnow:%Y-%m-%d} \
+      $COMMON_TARGET /etc/pve \
+        2>&1 | tee $log_file
+}
+
+vm_1() {
+  export BORGW_RESTRICT_REPOSITORY=/srv/borg/server-name/vm-1
+  gw_key=~/ssh/server-name_hypervisor.key
+  export SSH_ARGS="-o ProxyCommand=ssh -i$gw_key -W %h:%p server-name.fqdn -p 22"
+
+  host=172.16.0.1
+  port=22
+  ssh_key=~/ssh/server-name_vm-1.key
+  log_file="logs/"$(date --utc "+%Y-%m-%d_%H.%M.%SZ")"_$host.log"
+
+  /opt/borg/ssh-wrapper-server -t 12346 12346 /opt/borg/ssh-wrapper-client "$host -p $port -oBatchMode=yes -i$ssh_key" \
+    sudo /opt/borg/borg-client create \
+      --show-version --show-rc --verbose --list --stats --one-file-system --keep-exclude-tags \
+      $COMMON_EXCLUDE $VOLATILE_EXCLUDE \
+      ssh://backup-server/./::{utcnow:%Y-%m-%d} \
+      $COMMON_TARGET \
+        2>&1 | tee $log_file
+}
+
+hypervisor
+vm_1

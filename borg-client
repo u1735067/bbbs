@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+# Allow hooks to be executed
+
+borg_path=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
+
+if [ -x ~borg/backup-pre ]; then
+	~borg/backup-pre
+fi
+
+$borg_path/borg.bin "$@"
+
+if [ -x ~borg/backup-post ]; then
+	~borg/backup-post
+fi

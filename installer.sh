@@ -72,12 +72,12 @@ borg_install_client() {
 	echo "-- Sudoers rules"
 	cat <<EOF
 
-The following sudoers (run visudo) rules are required, it allows the user borg
+ > The following sudoers (run visudo) rules are required, it allows the user borg
 to run /opt/borg/borg.bin as root (with BORG_* environment variables kept):
 
 # Borg client
-Defaults:borg env_keep += "BORG_*"
-borg ALL=(root,backup : root,backup) NOPASSWD: /opt/borg/borg.bin create *
+Defaults:borg env_keep += "LANG BORG_*"
+borg ALL=(root,backup : root,backup) NOPASSWD: /opt/borg/borg-client create *
 
 EOF
 
@@ -112,14 +112,14 @@ borg_install_server() {
 	echo "-- Sudoers rules"
 	cat <<EOF
 
-The following sudoers (run visudo) rules are required, it allows the admins
+ > The following sudoers (run visudo) rules are required, it allows the admins
 to run /opt/borg/borg.bin and the server wrapper as borg (keeping required 
 environment variables):
 
 # Borg server
 Defaults>borg env_keep += "BORG_* BORGW_* SSH_*"
 root,%sudo,%wheel ALL=(borg) NOPASSWD: /opt/borg/borg.bin
-root,%sudo,%wheel ALL=(borg) NOPASSWD: /opt/borg/wrapper-server.sh
+root,%sudo,%wheel ALL=(borg) NOPASSWD: /opt/borg/ssh-wrapper-server
 
 EOF
 
@@ -136,6 +136,8 @@ borg_uninstall() {
 	echo "- Uninstalling Borg"
 	echo "-- Removing executable and cache"
 	rm -rf "$dir_exec" "$dir_cache"
+	echo "-- Sudoers"
+	echo " > You can remove borg related entries by running visudo"
 }
 
 borg_uninstall_with_user() {

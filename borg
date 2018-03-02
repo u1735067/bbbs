@@ -11,3 +11,4 @@ if [ "$(id --user --name)" != "$borg_user" ]; then # logname / whoami
 	exec sudo -u $borg_user $borg_path/borg.bin "$@"
 else
 	exec $borg_path/borg.bin "$@"
+fi
