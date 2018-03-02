@@ -11,9 +11,9 @@ dir_cache=/var/cache/borg
 
 borg_retrieve_check() {
 	# Check if required commands are present
-	if [ $(command -v curl) ] || ( echo "ERROR: curl is missing"; exit )
-	if [ $(command -v jq) ] || ( echo "ERROR: jq is missing"; exit )
-	if [ $(command -v gpg) ] || ( echo "ERROR: gpg is missing"; exit )
+	[ (command -v curl) ] || ( echo "ERROR: curl is missing"; exit )
+	[ $(command -v jq) ] || ( echo "ERROR: jq is missing"; exit )
+	[ $(command -v gpg) ] || ( echo "ERROR: gpg is missing"; exit )
 
 	tmpdir=$(mktemp --directory)
 	pushd $tmpdir > /dev/null
