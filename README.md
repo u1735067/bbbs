@@ -45,6 +45,20 @@ server> sudo -u borg ./do-backup
 
 `borg-client` will call `~borg/backup-pre` and `~borg/backup-pre` on the client before and after running `borg create`, you can use them to dump a sql database and remove it for example.
 
+To manage ssh connexion parameters, you can also use `ssh_config` instead, for example:
+```
+server> cat ~borg/ssh/config
+Host *
+        User borg
+
+Host server-name
+        Port 22
+        IdentityFile ~/ssh/server-name_hypervisor.key
+
+Host 172.16.*.*
+        ProxyCommand ssh -W %h:%p server-name
+```
+
 
 Diagram
 -------
