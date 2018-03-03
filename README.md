@@ -18,26 +18,20 @@ Obviously, ou have to edit `do-backup.example` according to your needs.
 
 ```
 client> apt-get update && apt-get install git sudo socat curl jq
-client> cd /opt/
-client> git clone git@github.com:Alex131089/bbbs.git borg
-client> cd borg/
-client> ./installer.sh install-client
-client> visudo
+client> git clone git@github.com:Alex131089/bbbs.git /opt/borg
+client> borg/installer.sh install-client
 
-server> apt-get update && apt-get install git sudo socat curl jq
-server> cd /opt/
-server> git clone git@github.com:Alex131089/bbbs.git borg
-server> cd borg/
-server> ./installer.sh install-server
-server> visudo
+server> yum install git sudo socat curl jq
+server> git clone git@github.com:Alex131089/bbbs.git /opt/borg
+server> borg/installer.sh install-server
 
-server> ./ssh-gen-copy-key -g -k server-name_hypervisor -c -u borg -- root@server-name -p 22
-server> gw_key=~borg/ssh/server-name_hypervisor.key; ./ssh-gen-copy-key -g -k server-name_vm-1 -c -u borg -- root@172.16.0.1 -p 22 -o ProxyCommand="ssh -i$gw_key -W %h:%p server-name.fqdn -p 22"
+server> /opt/borg/ssh-gen-copy-key -g -k server-name_hypervisor -c -u borg -- root@server-name -p 22
+server> gw_key=~borg/ssh/server-name_hypervisor.key; /opt/borg/ssh-gen-copy-key -g -k server-name_vm-1 -c -u borg -- root@172.16.0.1 -p 22 -o ProxyCommand="ssh -i$gw_key -W %h:%p server-name.fqdn -p 22"
 
 server> /opt/borg/borg init -e authenticated-blake2 /srv/borg/server-name/hypervisor
 server> /opt/borg/borg init -e authenticated-blake2 /srv/borg/server-name/vm-1
 
-server> sudo -u borg ./do-backup
+server> sudo -u borg /opt/borg/do-backup
 ```
 
 `borg-client` will call `~borg/backup-pre` and `~borg/backup-pre` on the client before and after running `borg create`, you can use them to dump a sql database and remove it for example.
@@ -81,8 +75,11 @@ Diagram
 Pre & post hooks
 ----------------
 
+**/!\ Don't forget to set executable bit (`chmod +x ~borg/backup-p*`) on them!**
+
 ### Mysql
 Cache credentials in `~borg/.mylogin.cnf` (see [`mysqldump`](https://dev.mysql.com/doc/refman/en/mysqldump.html), [`mysql_config_editor`](https://dev.mysql.com/doc/refman/en/password-security-user.html)):
+
 ```
 su borg -c "mysql_config_editor set --user=root --password"
 ```
@@ -110,6 +107,29 @@ echo "- Dumping MySQL ... Done"
 echo "- Removing MySQL Dump ..."
 rm -f /var/backups/mysql/borg-*
 echo "- Removing MySQL Dump ... Done"
+```
+
+### Splunk
+See [Backup indexed data](http://docs.splunk.com/Documentation/Splunk/latest/Indexer/Backupindexeddata), [Index backup strategy](https://www.splunk.com/blog/2011/12/20/index-backup-strategy.html))
+
+`~borg/backup-pre`:
+```bash
+#!/usr/bin/env bash
+
+echo "- Stopping Splunk ..."
+service splunk stop
+#systemctl stop splunk
+echo "- Stopping Splunk ... Done"
+```
+
+`~borg/backup-post`:
+```bash
+#!/usr/bin/env bash
+
+echo "- Starting Splunk ..."
+service splunk start
+#systemctl start splunk
+echo "- Starting Splunk ... Done"
 ```
 
 Why ?

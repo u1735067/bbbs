@@ -1,0 +1,61 @@
+Filesystem Hierarchy Standard - http://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.pdf
+https://github.com/borgbackup/borg/blob/master/src/borg/helpers/fs.py
+https://borgbackup.readthedocs.io/en/stable/usage/general.html#environment-variables
+will symlink ~/.{config,cache} to the correct place so environment variables are not required
+
+--
+
+https://gist.github.com/steinwaywhw/a4cd19cda655b8249d908261a62687f8
+
+https://jqplay.org/
+https://stedolan.github.io/jq/manual/
+https://stackoverflow.com/questions/18592173/select-objects-based-on-value-of-variable-in-object-using-jq
+https://stackoverflow.com/questions/43259563/how-to-check-if-element-exists-in-array-with-jq
+https://github.com/stedolan/jq/issues/106
+
+https://stackoverflow.com/questions/9120512/verify-gpg-signature-without-installing-key
+
+https://stackoverflow.com/questions/43158140/way-to-create-multiline-comments-in-bash
+
+https://stackoverflow.com/questions/19306771/get-current-users-username-in-bash
+
+--
+
+https://linux.die.net/man/8/sudo
+https://linux.die.net/man/5/sudoers
+https://www.sudo.ws/man/sudo.man.html
+https://www.sudo.ws/man/sudoers.man.html
+https://www.garron.me/en/linux/visudo-command-sudoers-file-sudo-default-editor.html
+https://superuser.com/questions/169278/localhost-in-sudoers = useless
+https://unix.stackexchange.com/questions/71684/the-host-variable-in-etc-sudoers = useless
+https://serverfault.com/questions/90166/defining-hosts-in-sudoers-file
+https://serverfault.com/questions/480136/how-do-i-set-both-nopasswd-and-setenv-on-the-same-line-in-sudoers
+https://unix.stackexchange.com/questions/13240/etc-sudoers-specify-env-keep-for-one-command-only
+https://wiki.archlinux.org/index.php/sudo
+https://github.com/borgbackup/borg/blob/master/src/borg/helpers/fs.py
+-> BORG_BASE_DIR
+https://www.systutorials.com/docs/linux/man/8-sudo/
+
+user host = (runas) tags: cmd
+
+--
+
+https://askubuntu.com/questions/795226/how-to-list-all-enabled-services-from-systemctl
+systemctl list-units --type=service --state=running
+systemctl list-units --type=service --state=active
+systemctl list-unit-files --state=enabled
+systemctl list-unit-files | grep enabled
+awk -F':' 'BEGIN {rc=1} $1~/^backup$/ {rc=0; exit} END {exit rc}' /etc/group && gid="--gid backup"
+$(grep '^backup:' /etc/group > /dev/null) && gid="--gid backup" || gid=
+
+--
+
+http://docs.splunk.com/Documentation/Splunk/latest/Indexer/Backupindexeddata
+https://www.splunk.com/blog/2011/12/20/index-backup-strategy.html
+
+https://answers.splunk.com/answers/469816/what-is-the-best-practice-to-backup-splunk.html
+https://answers.splunk.com/answers/371134/what-is-the-best-way-to-back-up-splunk-upgrade-and.html
+https://answers.splunk.com/answers/11059/splunk-backup-and-restore-procedure.html
+https://answers.splunk.com/answers/499106/how-to-backup-all-data-splunk-has-indexed.html
+
+http://docs.splunk.com/Documentation/Splunk/latest/Admin/MoreaboutSplunkFree

@@ -46,18 +46,16 @@ else
 
   [ -z "$SSH_ARGS" ] && SSH_ARGS=-- # To avoid passing an empty argument
   if [ "$1" == '-s' -o "$1" == '--socket' ]; then
-    print_args socat UNIX-LISTEN:"$2" "EXEC:$borg_serve_cmd"
-    [ "$BORGW_DRYRUN" == "1" ] || socat UNIX-LISTEN:"$2" "EXEC:$borg_serve_cmd" &
+    print_exec socat UNIX-LISTEN:"$2" "EXEC:$borg_serve_cmd" &
     socat_pid=$!
     print_exec ssh -R "$2":"$3" $5 "$SSH_ARGS" "LANG=en_GB.UTF-8" "BORG_RSH=\"$4 -s $3\"" "BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK=yes" "${@:6}"
-    [ "$BORGW_DRYRUN" == "1" ] || (kill -0 "$socat_pid" && kill "$socat_pid")
+    [ "$BORGW_DRYRUN" == "1" ] || kill "$socat_pid" 2>/dev/null
   elif [ "$1" == '-t' -o "$1" == '--tcp' ]; then
     host=localhost
-    print_args socat TCP-LISTEN:"$2" "EXEC:$borg_serve_cmd"
-    [ "$BORGW_DRYRUN" == "1" ] || socat TCP-LISTEN:"$2" "EXEC:$borg_serve_cmd" &
+    print_exec socat TCP-LISTEN:"$2" "EXEC:$borg_serve_cmd" &
     socat_pid=$!
     print_exec ssh -R "$2":"$host":"$3" $5 "$SSH_ARGS" "LANG=en_GB.UTF-8" "BORG_RSH=\"$4 -t $3\"" "BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK=yes" "${@:6}"
-    [ "$BORGW_DRYRUN" == "1" ] || (kill -0 "$socat_pid" && kill "$socat_pid")
+    [ "$BORGW_DRYRUN" == "1" ] || kill "$socat_pid" 2>/dev/null
   else
     echo "unknown method"
   fi

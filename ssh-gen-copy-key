@@ -55,15 +55,15 @@ if [ ${DO_GEN:-0} -eq 1 ]; then
 	echo "-- Generating key pair"
 	# https://security.stackexchange.com/questions/50878/ecdsa-vs-ecdh-vs-ed25519-vs-curve25519
 	#ssh-keygen -b 4096 -C "Borg server ($(hostname))"
-	ssh-keygen -t ed25519 -N '' -C "Borg server ($(hostname --fqdn))" -f "ssh/${KEY_NAME}.key"
+	ssh-keygen -t ed25519 -N '' -C "Borg server ($(hostname --fqdn))" -f "ssh/key_${KEY_NAME}"
 	chown --recursive --reference ~borg "ssh/"
 fi
 if [ ${DO_COPY:-0} -eq 1 ]; then
 	echo "-- Adding public key to authorized_keys on client (for user $COPY_USER)"
 	# https://github.com/andrewpile/ssh-copy-id/blob/master/ssh-copy-id
-	cat "ssh/${KEY_NAME}.key.pub" | ssh -F ~borg/ssh/config -o UserKnownHostsFile=~borg/ssh/known_hosts "$@" -- \
+	cat "ssh/key_${KEY_NAME}.pub" | ssh -F ~borg/ssh/config -o UserKnownHostsFile=~borg/ssh/known_hosts "$@" -- \
 		"umask 077 ;" \
-		"test -d ~$COPY_USER || (echo 'Home for $COPY_USER not found'; exit) ;" \
+		"if [ ! -d ~$COPY_USER ]; then echo 'Home for $COPY_USER not found'; exit 1; fi;" \
 		"cd ~$COPY_USER; test -d .ssh || mkdir .ssh ;" \
 		"cat >> .ssh/authorized_keys ;" \
 		"chown --recursive --reference ~$COPY_USER .ssh ;" \

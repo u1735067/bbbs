@@ -40,7 +40,7 @@ hypervisor() {
 
   host=server-name.fqdn
   port=22
-  ssh_key=~/ssh/server-name_hypervisor.key
+  ssh_key=~/ssh/key_server-name_hypervisor
   log_file="logs/"$(date --utc "+%Y-%m-%d_%H.%M.%SZ")"_$host.log"
 
   /opt/borg/ssh-wrapper-server -t 12345 12345 /opt/borg/ssh-wrapper-client "$host -p $port -oBatchMode=yes -i$ssh_key" \
@@ -56,12 +56,12 @@ hypervisor() {
 
 vm_1() {
   export BORGW_RESTRICT_REPOSITORY=/srv/borg/server-name/vm-1
-  gw_key=~/ssh/server-name_hypervisor.key
+  gw_key=~/ssh/key_server-name_hypervisor
   export SSH_ARGS="-o ProxyCommand=ssh -i$gw_key -W %h:%p server-name.fqdn -p 22"
 
   host=172.16.0.1
   port=22
-  ssh_key=~/ssh/server-name_vm-1.key
+  ssh_key=~/ssh/key_server-name_vm-1
   log_file="logs/"$(date --utc "+%Y-%m-%d_%H.%M.%SZ")"_$host.log"
 
   /opt/borg/ssh-wrapper-server -t 12346 12346 /opt/borg/ssh-wrapper-client "$host -p $port -oBatchMode=yes -i$ssh_key" \

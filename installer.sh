@@ -11,9 +11,9 @@ dir_cache=/var/cache/borg
 
 borg_retrieve_check() {
 	# Check if required commands are present
-	[ $(command -v curl) ] || ( echo "ERROR: curl is missing"; exit )
-	[ $(command -v jq) ] || ( echo "ERROR: jq is missing"; exit )
-	[ $(command -v gpg) ] || ( echo "ERROR: gpg is missing"; exit )
+	if [ ! $(command -v curl) ]; then echo "ERROR: curl is missing"; exit 1; fi
+	if [ ! $(command -v jq) ]; then echo "ERROR: jq is missing"; exit 1; fi
+	if [ ! $(command -v gpg) ]; then echo "ERROR: gpg is missing"; exit 1; fi
 
 	tmpdir=$(mktemp --directory)
 	pushd $tmpdir > /dev/null
@@ -58,7 +58,7 @@ borg_install_client() {
 	#dir_security=$dir_conf/security
 	dir_cache=$dir_home/cache
 
-	echo "-- Seting up directories"
+	echo "-- Setting up directories"
 	if [ ! -d "$dir_home" ]; then
 		echo "User not created ?"
 		exit
@@ -104,7 +104,7 @@ borg_install_server() {
 	$(grep '^backup:' /etc/group > /dev/null) && gid="--gid backup" || gid=
 	useradd --system --create-home --home-dir "$dir_home" --gid backup --shell "/bin/bash" --skel /dev/null --password '*' $borg_user
 
-	echo "-- Seting up directories"
+	echo "-- Setting up directories"
 	if [ ! -d "$dir_home" ]; then
 		echo "User not created ?"
 		exit
@@ -183,47 +183,3 @@ case "$1" in
 		exit 3
 	;;
 esac
-
-: <<LINKS
-
-Filesystem Hierarchy Standard - http://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.pdf
-https://github.com/borgbackup/borg/blob/master/src/borg/helpers/fs.py
-https://borgbackup.readthedocs.io/en/stable/usage/general.html#environment-variables
-will symlink ~/.{config,cache} to the correct place so environment variables are not required
-
---
-
-https://gist.github.com/steinwaywhw/a4cd19cda655b8249d908261a62687f8
-
-https://jqplay.org/
-https://stedolan.github.io/jq/manual/
-https://stackoverflow.com/questions/18592173/select-objects-based-on-value-of-variable-in-object-using-jq
-https://stackoverflow.com/questions/43259563/how-to-check-if-element-exists-in-array-with-jq
-https://github.com/stedolan/jq/issues/106
-
-https://stackoverflow.com/questions/9120512/verify-gpg-signature-without-installing-key
-
-https://stackoverflow.com/questions/43158140/way-to-create-multiline-comments-in-bash
-
-https://stackoverflow.com/questions/19306771/get-current-users-username-in-bash
-
---
-
-https://linux.die.net/man/8/sudo
-https://linux.die.net/man/5/sudoers
-https://www.sudo.ws/man/sudo.man.html
-https://www.sudo.ws/man/sudoers.man.html
-https://www.garron.me/en/linux/visudo-command-sudoers-file-sudo-default-editor.html
-https://superuser.com/questions/169278/localhost-in-sudoers = useless
-https://unix.stackexchange.com/questions/71684/the-host-variable-in-etc-sudoers = useless
-https://serverfault.com/questions/90166/defining-hosts-in-sudoers-file
-https://serverfault.com/questions/480136/how-do-i-set-both-nopasswd-and-setenv-on-the-same-line-in-sudoers
-https://unix.stackexchange.com/questions/13240/etc-sudoers-specify-env-keep-for-one-command-only
-https://wiki.archlinux.org/index.php/sudo
-https://github.com/borgbackup/borg/blob/master/src/borg/helpers/fs.py
--> BORG_BASE_DIR
-https://www.systutorials.com/docs/linux/man/8-sudo/
-
-user host = (runas) tags: cmd
-
-LINKS
