@@ -38,7 +38,7 @@ borg_retrieve_check() {
 	mkdir --parents $dir_exec 2> /dev/null
 	mv $borg_bin $borg_bin".old" 2> /dev/null
 	mv $borg_exec $borg_bin
-	chmod u+x $borg_bin
+	chmod +x $borg_bin
 	popd > /dev/null
 	rm -rf $tmpdir
 }

@@ -61,7 +61,7 @@ fi
 if [ ${DO_COPY:-0} -eq 1 ]; then
 	echo "-- Adding public key to authorized_keys on client (for user $COPY_USER)"
 	# https://github.com/andrewpile/ssh-copy-id/blob/master/ssh-copy-id
-	cat "ssh/${KEY_NAME}.key.pub" | ssh "$@" -- \
+	cat "ssh/${KEY_NAME}.key.pub" | ssh -F ~borg/ssh/config -o UserKnownHostsFile=~borg/ssh/known_hosts "$@" -- \
 		"umask 077 ;" \
 		"test -d ~$COPY_USER || (echo 'Home for $COPY_USER not found'; exit) ;" \
 		"cd ~$COPY_USER; test -d .ssh || mkdir .ssh ;" \
@@ -69,16 +69,7 @@ if [ ${DO_COPY:-0} -eq 1 ]; then
 		"chown --recursive --reference ~$COPY_USER .ssh ;" \
 		"echo Ok"
 	
-	# Prepare known_hosts if not existing
-	if [ ! -f "ssh/known_hosts" ]; then
-		touch "ssh/known_hosts"
-		chown --recursive --reference ~borg "ssh/known_hosts"
-	fi
-	echo
-	echo "Don't forget to add remote host to known hosts for user borg, using"
-	echo "ssh-keygen -F '[host]:port' | sed '/^#/d' >> ~borg/ssh/known_hosts"
-	echo "or"
-	echo "ssh-keygen -F 'host' | sed '/^#/d' >> ~borg/ssh/known_hosts"
+	chown --recursive --reference ~borg "ssh/known_hosts"
 fi
 
 popd > /dev/null
