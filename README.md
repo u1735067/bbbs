@@ -26,7 +26,7 @@ server> git clone git@github.com:Alex131089/bbbs.git /opt/borg
 server> borg/installer.sh install-server
 
 server> /opt/borg/ssh-gen-copy-key -g -k server-name_hypervisor -c -u borg -- root@server-name -p 22
-server> gw_key=~borg/ssh/server-name_hypervisor.key; /opt/borg/ssh-gen-copy-key -g -k server-name_vm-1 -c -u borg -- root@172.16.0.1 -p 22 -o ProxyCommand="ssh -i$gw_key -W %h:%p server-name.fqdn -p 22"
+server> gw_key=~borg/ssh/key_server-name_hypervisor; /opt/borg/ssh-gen-copy-key -g -k server-name_vm-1 -c -u borg -- root@172.16.0.1 -p 22 -o ProxyCommand="ssh -i$gw_key -W %h:%p server-name.fqdn -p 22"
 
 server> /opt/borg/borg init -e authenticated-blake2 /srv/borg/server-name/hypervisor
 server> /opt/borg/borg init -e authenticated-blake2 /srv/borg/server-name/vm-1
@@ -44,7 +44,7 @@ Host *
 
 Host server-name
         Port 22
-        IdentityFile ~borg/ssh/server-name_hypervisor.key
+        IdentityFile ~borg/ssh/key_server-name_hypervisor
 
 Host 172.16.*.*
         ProxyCommand ssh -F ~borg/ssh/config -W %h:%p server-name
@@ -110,7 +110,7 @@ echo "- Removing MySQL Dump ... Done"
 ```
 
 ### Splunk
-See [Backup indexed data](http://docs.splunk.com/Documentation/Splunk/latest/Indexer/Backupindexeddata), [Index backup strategy](https://www.splunk.com/blog/2011/12/20/index-backup-strategy.html))
+See [Backup indexed data](http://docs.splunk.com/Documentation/Splunk/latest/Indexer/Backupindexeddata), [Index backup strategy](https://www.splunk.com/blog/2011/12/20/index-backup-strategy.html).
 
 `~borg/backup-pre`:
 ```bash

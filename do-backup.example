@@ -16,7 +16,7 @@
 # logs = /var/log
 
 borg_user=borg
-if [ "$(id --user --name)" != "$borg_user" -o $# -lt 3 ]; then
+if [ "$(id --user --name)" != "$borg_user" ]; then
   echo "$0 must be run as $borg_user"
   exit
 fi
@@ -75,3 +75,8 @@ vm_1() {
 
 hypervisor
 vm_1
+
+# Maybe the calls could be parallized with & (but you cannot use the same repo then)
+# https://stackoverflow.com/questions/356100/how-to-wait-in-bash-for-several-subprocesses-to-finish-and-return-exit-code-0
+# wait for remaining backup then
+# killall -g -u borg
