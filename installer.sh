@@ -70,17 +70,23 @@ borg_install_client() {
 	chown --reference "$dir_home" $borg_bin
 	chown --recursive --reference "$dir_home" "$dir_home"
 
-	echo "-- Sudoers rules"
-	cat <<EOF
+	echo "-- Adding sudoers rules"
+	sudo_rules="\
+# Borg client
+Defaults:borg env_keep += \"LANG BORG_*\"
+borg ALL=(root,backup : root,backup) NOPASSWD: /opt/borg/borg-client create *
+"
+	if [ -d "/etc/sudoers.d" -a ! -e "/etc/sudoers.d/borg" ]; then
+		echo "$sudo_rules" > "/etc/sudoers.d/borg"
+	else
+		cat <<EOF
 
  > The following sudoers (run visudo) rules are required, it allows the user borg
 to run /opt/borg/borg.bin as root (with BORG_* environment variables kept):
 
-# Borg client
-Defaults:borg env_keep += "LANG BORG_*"
-borg ALL=(root,backup : root,backup) NOPASSWD: /opt/borg/borg-client create *
-
+$sudo_rules
 EOF
+	fi
 
 	echo "- Done."
 }
@@ -110,19 +116,25 @@ borg_install_server() {
 	chown --reference "$dir_home" $borg_bin
 	chown --recursive --reference "$dir_home" "$dir_home" "$dir_cache"
 
-	echo "-- Sudoers rules"
-	cat <<EOF
+	echo "-- Adding sudoers rules"
+	sudo_rules="\
+# Borg server
+Defaults>borg env_keep += \"BORG_* BORGW_* SSH_*\"
+root,%sudo,%wheel ALL=(borg) NOPASSWD: /opt/borg/borg.bin
+root,%sudo,%wheel ALL=(borg) NOPASSWD: /opt/borg/ssh-wrapper-server
+"
+	if [ -d "/etc/sudoers.d" -a ! -e "/etc/sudoers.d/borg" ]; then
+		echo "$sudo_rules" > "/etc/sudoers.d/borg"
+	else
+		cat <<EOF
 
  > The following sudoers (run visudo) rules are required, it allows the admins
 to run /opt/borg/borg.bin and the server wrapper as borg (keeping required 
 environment variables):
 
-# Borg server
-Defaults>borg env_keep += "BORG_* BORGW_* SSH_*"
-root,%sudo,%wheel ALL=(borg) NOPASSWD: /opt/borg/borg.bin
-root,%sudo,%wheel ALL=(borg) NOPASSWD: /opt/borg/ssh-wrapper-server
-
+$sudo_rules
 EOF
+	fi
 
 	echo "- Done."
 }
@@ -137,8 +149,9 @@ borg_uninstall() {
 	echo "- Uninstalling Borg"
 	echo "-- Removing executable and cache"
 	rm -rf "$dir_exec" "$dir_cache"
-	echo "-- Sudoers"
-	echo " > You can remove borg related entries by running visudo"
+	echo "-- Removing sudoers rules"
+	[ -f "/etc/sudoers.d/borg" ] && rm -f "/etc/sudoers.d/borg" || \
+	  echo " > /etc/sudoers.d/borg wasn't found, please check borg related entries are removed"
 }
 
 borg_uninstall_with_user() {
