@@ -1,6 +1,6 @@
-Bash Borg Backup Server
-=======================
-Borg wrappers for server [pull mode](https://github.com/borgbackup/borg/issues/900).
+Bash [Borg](https://www.borgbackup.org/) Backup Server
+======================================================
+[Borg](https://github.com/borgbackup/borg) wrappers for server [pull mode](https://github.com/borgbackup/borg/issues/900).
 As distributions repositories may not always be updated, it is designed to work with the standalone version, installed in `/opt/borg`.
 
 Requirement
@@ -82,9 +82,15 @@ Pre & post hooks
 ----------------
 
 ### Mysql
-Cache credentials in `.mylogin.cnf` (see [mysqldump](https://dev.mysql.com/doc/refman/en/mysqldump.html), [mysql_config_editor](https://dev.mysql.com/doc/refman/en/password-security-user.html)):
+Cache credentials in `~borg/.mylogin.cnf` (see [`mysqldump`](https://dev.mysql.com/doc/refman/en/mysqldump.html), [`mysql_config_editor`](https://dev.mysql.com/doc/refman/en/password-security-user.html)):
 ```
 su borg -c "mysql_config_editor set --user=root --password"
+```
+or for `MariaDB` in `~borg/.my.cnf` (see [`mysqldump`](https://mariadb.com/kb/en/library/mysqldump/)):
+```
+[mysqldump]
+user=mysqluser
+password=secret
 ```
 
 `~borg/backup-pre`:
@@ -105,3 +111,9 @@ echo "- Removing MySQL Dump ..."
 rm -f /var/backups/mysql/borg-*
 echo "- Removing MySQL Dump ... Done"
 ```
+
+Why ?
+-----
+While [`Borg Backup Server`](http://www.borgbackupserver.com/) (BBS) has been [announced](https://github.com/borgbackup/borg/issues/2960#issuecomment-341742078), it is [not available yet](https://github.com/marcpope/bbs) and I needed a solution (preferably before my server crashes).
+This is ugly but probably the simplest for now (when using pull mode).
+A correct solution could be to use `python` as wrapper, with `libssh` to setup the channel, and parsing nice configuration files.

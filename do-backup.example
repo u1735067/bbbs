@@ -15,6 +15,12 @@
 # homes = /root /home
 # logs = /var/log
 
+borg_user=borg
+if [ "$(id --user --name)" != "$borg_user" -o $# -lt 3 ]; then
+  echo "$0 must be run as $borg_user"
+  exit
+fi
+
 COMMON_TARGET="/ /boot /etc /root /home /opt /srv /var /var/log"
 COMMON_EXCLUDE="--exclude /sys/ --exclude /proc/ --exclude /dev/ --exclude /run/ --exclude /var/run/ --exclude /mnt/"
 VOLATILE_EXCLUDE="--exclude /tmp/ --exclude /var/tmp/ --exclude /lost+found --exclude /var/cache/ --exclude /home/*/.cache"

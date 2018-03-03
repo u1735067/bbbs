@@ -49,7 +49,8 @@ borg_install_client() {
 	borg_retrieve_check
 
 	echo "-- Creating user"
-	useradd --system --create-home --gid backup --shell "/bin/bash" --skel /dev/null --password '*' $borg_user
+	$(grep '^backup:' /etc/group > /dev/null) && gid="--gid backup" || gid=
+	useradd --system --create-home $gid --shell "/bin/bash" --skel /dev/null --password '*' $borg_user
 
 	dir_home=~borg
 	dir_conf=$dir_home
@@ -94,7 +95,7 @@ borg_install_server() {
 	borg_retrieve_check
 
 	echo "-- Creating user"
-	#adduser --system              --home "$dir_home"   --ingroup backup --shell "/bin/bash" --disabled-login .....
+	$(grep '^backup:' /etc/group > /dev/null) && gid="--gid backup" || gid=
 	useradd --system --create-home --home-dir "$dir_home" --gid backup --shell "/bin/bash" --skel /dev/null --password '*' $borg_user
 
 	echo "-- Seting up directories"
