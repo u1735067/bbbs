@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Set UTF-8 locale, see ./borg
+# Set en UTF-8 locale, see README.md for explanation about this
 lcutf8=0 # utf8 locale is not set
 unilocales=$(locale -a 2>/dev/null | grep -iE '\.utf-?8') # List UTF-8 locales
 for env in 'LC_ALL' 'LC_CTYPE' 'LANG'; do # LC_ALL > LC_CTYPE > LANG ; LANGUAGE is for gettext
@@ -23,14 +23,15 @@ fi
 unset -v unilocales
 
 borg_path=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
+borg_user=borg
 
 # Allow hooks to be executed
-if [ "$1" = "create" -a -x ~borg/backup-pre ]; then
-	~borg/backup-pre
+if [ "$1" = "create" -a -x ~$borg_user/backup-pre ]; then
+	~$borg_user/backup-pre
 fi
 
 $borg_path/borg.bin "$@"
 
-if [ "$1" = "create" -a -x ~borg/backup-post ]; then
-	~borg/backup-post
+if [ "$1" = "create" -a -x ~$borg_user/backup-post ]; then
+	~$borg_user/backup-post
 fi

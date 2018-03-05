@@ -1,22 +1,6 @@
 #!/usr/bin/env bash
 
-# You can place this file in /root/bin/
-# It will launch borg for you with the right user
-
-borg_path=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
-borg_user=borg
-
-# Because distributions like OMV can decide to switch LANG to C before launching crons, which makes Python read
-# FS filenames as ANSI, which generate decode errors for non ANSI strings; for more informations about this awful mess:
-# - https://stackoverflow.com/questions/27366479/python-3-os-walk-file-paths-unicodeencodeerror-utf-8-codec-cant-encode-s
-# - https://unix.stackexchange.com/questions/2089/what-charset-encoding-is-used-for-filenames-and-paths-on-linux (because there's no standard in the first place)
-# - https://bugs.python.org/issue13717
-# - https://bugs.python.org/issue19846
-# - https://bugs.python.org/issue19847
-# - https://docs.python.org/3/howto/unicode.html#unicode-filenames (about fallback)
-# Of courne, no unification here either: debian have it's own custom C.UTF-8 by default while centos seems to enable many locales by default ..
-# https://gist.github.com/Alex131089/8b4a7e346c040b09c5b8ac99951fda29
-# borg seems to handle that correctly though, it seems to be only required to extract / fuse mount
+# Set en UTF-8 locale, see README.md for explanation about this
 lcutf8=0 # utf8 locale is not set
 unilocales=$(locale -a 2>/dev/null | grep -iE '\.utf-?8') # List UTF-8 locales
 for env in 'LC_ALL' 'LC_CTYPE' 'LANG'; do # LC_ALL > LC_CTYPE > LANG ; LANGUAGE is for gettext
@@ -37,6 +21,9 @@ if [ $lcutf8 -eq 0 -a -n "$unilocales" ]; then # Still no utf8 locale prioritize
 	done
 fi
 unset -v unilocales
+
+borg_path=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
+borg_user=borg
 
 if [ "$(id --user --name)" != "$borg_user" ]; then # logname / whoami
 	echo "Executing as $borg_user"
