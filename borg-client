@@ -2,38 +2,23 @@
 
 # Set UTF-8 locale, see ./borg
 lcutf8=0 # utf8 locale is not set
-higher_level=''
-higher_value=''
-for env in LANGUAGE LC_ALL LC_CTYPE LANG; do # LANGUAGE > LC_ALL > LC_CTYPE > LANG
+unilocales=$(locale -a 2>/dev/null | grep -iE '\.utf-?8') # List UTF-8 locales
+for env in 'LANGUAGE' 'LC_ALL' 'LC_CTYPE' 'LANG'; do # LANGUAGE > LC_ALL > LC_CTYPE > LANG
 	if [ -n "${!env:+x}" ]; then # Is defined & not null
-		[ -z "$higher_level" ] && higher_level="$env" && higher_value="${!env}" # Keep the first locale found
-		if (echo "${!env}" | grep -iE '\.utf-?8'); then # Is utf-8
-				lcutf8=1
-				break
-		else
-			export -n "$env" # Unset higher priority non utf-8
+		(echo "${!env}" | grep -iE '\.utf-?8' > /dev/null) && lcutf8=1 && break # If it's utf8 already, we're done
+		if [ -n "$unilocales" ]; then # If we have somewhere to search
+			simple=$(echo "${!env}" | cut -d':' -f1 | cut -d'.' -f1 | cut -d'@' -f1)
+			found=$(echo "$unilocales" | grep -im1 "^${simple}\.") # Look for an utf8 alternative
+			[ -n "$found" ] && export "${env}=${found}" && lcutf8=2 && break # Set it and done
 		fi
+		export -n "$env" # Otherwise remove this non-utf8 higher priority
 	fi
 done
-if [ $lcutf8 -eq 0 ]; then # No utf8 locale found and all non-utf8 locales unset
-	unilocales=$(locale -a | grep -iE '\.utf-?8') # So look for an UTF-8 locale
-	if [ -n "$unilocales" ]; then
-		if [ -n "$higher_level" ]; then # Try to find the utf8 variant of the highest locale found
-			higher_value=$(echo "$higher_value" | cut -d':' -f1 | cut -d'.' -f1 | cut -d'@' -f1)
-			found=$(echo "$unilocales" | grep -im1 "^${higher_value}.")
-			[ -n "$found" ] && export "${higher_level}=${found}" && lcutf8=2
-		fi
-		if [ $lcutf8 -eq 0 ]; then # Still not found ? Last try .. C, then English, then any available
-			for try in '^C\.' '^en_GB\.' '^en_US\.' '^en_' ''; do
-				found=$(echo "$unilocales" | grep -im1 "$try")
-				if [ -n "$found" ]; then
-					export LC_CTYPE="$found"
-					lcutf8=3
-					break
-				fi
-			done
-		fi
-	fi
+if [ $lcutf8 -eq 0 -a -n "$unilocales" ]; then # Still no utf8 locale prioritized, all non-utf8 locales are now unset
+	for try in '^C\.' '^en_GB\.' '^en_US\.' '^en_' ''; do # So last try .. C, then English, then first available
+		found=$(echo "$unilocales" | grep -im1 "$try")
+		[ -n "$found" ] && export LC_CTYPE="$found" && lcutf8=3 && break
+	done
 fi
 unset -v unilocales
 
