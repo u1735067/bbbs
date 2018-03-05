@@ -72,8 +72,8 @@ Diagram
   ===== = ssh channel
 ```
 
-Pre & post hooks
-----------------
+Pre & post hooks on client
+--------------------------
 
 **/!\ Don't forget to set executable bit (`chmod +x ~borg/backup-p*`) on them!**
 
