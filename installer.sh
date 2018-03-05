@@ -73,7 +73,7 @@ borg_install_client() {
 	echo "-- Adding sudoers rules"
 	sudo_rules="\
 # Borg client
-Defaults:borg env_keep += \"LANG BORG_*\"
+Defaults:borg env_keep += \"BORG_*\"
 borg ALL=(root,backup : root,backup) NOPASSWD: /opt/borg/borg-client create *
 "
 	if [ -d "/etc/sudoers.d" -a ! -e "/etc/sudoers.d/borg" ]; then
@@ -119,7 +119,7 @@ borg_install_server() {
 	echo "-- Adding sudoers rules"
 	sudo_rules="\
 # Borg server
-Defaults>borg env_keep += \"BORG_* BORGW_* SSH_*\"
+Defaults>borg env_keep += \"LANG BORG_* BORGW_* SSH_*\"
 root,%sudo,%wheel ALL=(borg) NOPASSWD: /opt/borg/borg.bin
 root,%sudo,%wheel ALL=(borg) NOPASSWD: /opt/borg/ssh-wrapper-server
 "
