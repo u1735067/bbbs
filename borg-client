@@ -3,11 +3,11 @@
 # Set UTF-8 locale, see ./borg
 lcutf8=0 # utf8 locale is not set
 unilocales=$(locale -a 2>/dev/null | grep -iE '\.utf-?8') # List UTF-8 locales
-for env in 'LANGUAGE' 'LC_ALL' 'LC_CTYPE' 'LANG'; do # LANGUAGE > LC_ALL > LC_CTYPE > LANG
+for env in 'LC_ALL' 'LC_CTYPE' 'LANG'; do # LC_ALL > LC_CTYPE > LANG ; LANGUAGE is for gettext
 	if [ -n "${!env:+x}" ]; then # Is defined & not null
 		(echo "${!env}" | grep -iE '\.utf-?8' > /dev/null) && lcutf8=1 && break # If it's utf8 already, we're done
 		if [ -n "$unilocales" ]; then # If we have somewhere to search
-			simple=$(echo "${!env}" | cut -d':' -f1 | cut -d'.' -f1 | cut -d'@' -f1)
+			simple=$(echo "${!env}" | cut -d'.' -f1 | cut -d'@' -f1)
 			found=$(echo "$unilocales" | grep -im1 "^${simple}\.") # Look for an utf8 alternative
 			[ -n "$found" ] && export "${env}=${found}" && lcutf8=2 && break # Set it and done
 		fi
