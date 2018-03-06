@@ -29,9 +29,9 @@ _bbbs_retrieve_check() {
 	pushd "$tmpdir" > /dev/null
 
 	echo "-- Retrieving binary & signature"
-	curl --silent https://api.github.com/repos/borgbackup/borg/releases/latest \
+	curl --silent --show-error https://api.github.com/repos/borgbackup/borg/releases/latest \
 		| jq --raw-output '.assets[] | select(.name as $asset | ["'$borg_exec'", "'$borg_exec_sig'"] | index($asset)) | .browser_download_url' \
-		| xargs --max-args=1 --max-procs=2 curl --silent --location --remote-name
+		| xargs curl --location --remote-name-all # --progress-bar could be used too
 
 	echo "-- Checking signature"
 
@@ -56,11 +56,12 @@ _bbbs_retrieve_check() {
 }
 
 bbbs_retrieve_check() {
-	if ! _bbbs_retrieve_check || [ ! -x "borg_bin" ]; then
+	if ! _bbbs_retrieve_check || [ ! -x "$borg_bin" ]; then
 		echo "The script failed to retrieve or verify borg binary, you'll have to do it yourself, or you can abort and retry"
 		read -rn1 -p "Do you want to continue? [yN]: " skip_bin
 		echo
 		if ! [ "$skip_bin" = 'y' -o "$skip_bin" = 'Y' ]; then
+			echo "Exiting"
 			exit 1
 		fi
 	fi
@@ -68,7 +69,7 @@ bbbs_retrieve_check() {
 
 bbbs_install_client() {
 	echo "- Installing BBBS (client)"
-	
+
 	# Ideally, the server version should be pushed
 	bbbs_retrieve_check
 
@@ -180,7 +181,7 @@ bbbs_update() {
 	echo "-- Pulling scripts"
 	pushd $(cd -P -- "$(dirname -- "$0")" && pwd -P) > /dev/null
 	git pull
-	popd
+	popd > /dev/null
 
 	bbbs_retrieve_check
 
