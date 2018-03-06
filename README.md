@@ -3,6 +3,27 @@ Bash [Borg](https://www.borgbackup.org/) Backup System (BBBS)
 [Borg](https://github.com/borgbackup/borg) wrappers for server [pull mode](https://github.com/borgbackup/borg/issues/900).
 As distributions repositories may not always be updated, it is designed to work with the standalone version, installed in `/opt/bbbs`.
 
+Features
+--------
+ * Provide pull mode in one command on the server; the wrappers will take care of the required sub-commands
+   * One connection, from the server to the client
+     * Clients doesn't have to know server's address
+     * Datas are sent through an SSH channel
+   * TCP or Unix socket
+   * Call pre and post backup hooks on the client
+ * Provide an admin wrapper to start borg with the right user (not to mess with file ownership)
+ * As the created user is dedicated to borg, configuration files are exposed, and redirected via symlinks for borg
+ * Installer handle borg binary retrieval (not to bother with distributions mess), user creation, directory setup
+ * SSH provisioning handle both user and host (`known_hosts`) key
+ * Ensure correct (ie. `UTF-8`) locale
+
+Limitations
+-----------
+ * No real configuration file
+ * Doesn't really handle failure (deconnection, ...)
+ * It's ugly
+ * Probably more ...
+
 Requirement
 -----------
  * bash
@@ -13,9 +34,9 @@ Requirement
 
 Instructions
 ------------
-You can `git clone https://github.com/Alex131089/bbbs` in `/opt/bbbs/` and run the installer.\
+One option is to `git clone https://github.com/Alex131089/bbbs` in `/opt/bbbs/` and run the installer.\
 Obviously, you have to create `do-backup` from `do-backup.example` according to your needs and mark it as executable (`chmod +x /opt/bbbs/do-backup`).\
-borg's dot path are symlinked to more accessible paths (`.cache/borg -> ~/cache`, `.config/borg -> ~/` (will expose `keys` and `security` directly), `.ssh -> ssh`).
+borg's dot path are symlinked to more accessible paths (`.cache/borg -> ~/cache`, `.config/borg -> ~/` (to expose `keys` and `security` directly), `.ssh -> ssh`).
 
 ```
 client> apt-get update && apt-get install git sudo socat curl jq
@@ -26,13 +47,15 @@ server> yum install git sudo socat curl jq
 server> git clone git@github.com:Alex131089/bbbs.git /opt/bbbs
 server> /opt/bbbs/installer.sh install-server
 
-server> /opt/bbbs/ssh-gen-copy-key -g -k server-name_hypervisor -c -u borg -- root@server-name -p 22
-server> gw_key=~borg/ssh/key_server-name_hypervisor; /opt/bbbs/ssh-gen-copy-key -g -k server-name_vm-1 -c -u borg -- root@172.16.0.1 -p 22 -o ProxyCommand="ssh -i$gw_key -W %h:%p server-name.fqdn -p 22"
+server> /opt/bbbs/ssh-gen-copy-key --generate --key-name server-name_hypervisor --copy --user borg -- root@server-name -p 22
+server> gw_key=~borg/ssh/key_server-name_hypervisor; /opt/bbbs/ssh-gen-copy-key --generate --key-name server-name_vm-1 --copy --user borg -- root@172.16.0.1 -p 22 -o ProxyCommand="ssh -i$gw_key -W %h:%p server-name.fqdn -p 22"
 
 server> /opt/bbbs/borg init -e authenticated-blake2 /srv/borg/server-name/hypervisor
 server> /opt/bbbs/borg init -e authenticated-blake2 /srv/borg/server-name/vm-1
 
 server> sudo -u borg /opt/bbbs/do-backup
+
+server> /opt/bbbs/borg info /srv/borg/server-name/hypervisor
 ```
 
 `bbbs-client` will call `~borg/backup-pre` and `~borg/backup-pre` on the client before and after running `borg create`, you can use them to dump a sql database and remove it for example.
@@ -97,6 +120,7 @@ password=secret
 
 echo "- Dumping MySQL ..."
 mkdir --parents /var/backups/mysql
+# GZip directly in case the database is huge -- could be handled by borg using stdin maybe
 mysqldump --all-databases --single-transaction | gzip --fast --rsyncable > /var/backups/mysql/borg-dump_$(date --utc "+%Y-%m-%d_%H.%M.%SZ").sql.gz
 echo "- Dumping MySQL ... Done"
 ```
@@ -128,7 +152,7 @@ echo "- Stopping Splunk ... Done"
 #!/usr/bin/env bash
 
 echo "- Starting Splunk ..."
-service splunk start
+service splunk start # || mail failed to restart service, check ASAP
 #systemctl start splunk
 echo "- Starting Splunk ... Done"
 ```

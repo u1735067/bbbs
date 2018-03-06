@@ -66,3 +66,7 @@ https://stackoverflow.com/questions/1885525/how-do-i-prompt-a-user-for-confirmat
 https://unix.stackexchange.com/questions/7769/should-i-include-a-trailing-slash-in-a-symlink-to-a-directory
 https://unix.stackexchange.com/questions/1910/how-does-linux-handle-multiple-consecutive-path-separators-home-username
 https://unix.stackexchange.com/questions/7769/should-i-include-a-trailing-slash-in-a-symlink-to-a-directory/7795#7795
+https://stackoverflow.com/questions/192319/how-do-i-know-the-script-file-name-in-a-bash-script
+
+https://arstechnica.com/civis/viewtopic.php?t=107145
+https://stackoverflow.com/questions/9522631/how-to-put-a-line-comment-for-a-multi-line-command

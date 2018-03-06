@@ -77,8 +77,16 @@ vm_1() {
 				2>&1 | tee $log_file
 }
 
-hypervisor
-vm_1
+#hypervisor
+#vm_1
+
+# Pass the host (=function) to backup as argument to the script
+echo "------ Backups to process: $@"
+for bak in "$@"; do
+	echo "---- Starting backup $bak"
+	"$bak"
+	echo "---- Backup $bak ended"
+done
 
 # Maybe the calls could be parallized with & (but you cannot use the same repo then)
 # https://stackoverflow.com/questions/356100/how-to-wait-in-bash-for-several-subprocesses-to-finish-and-return-exit-code-0

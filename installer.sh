@@ -191,14 +191,20 @@ bbbs_update() {
 bbbs_uninstall() {
 	echo "- Uninstalling BBBS"
 
-	echo "-- Removing executable and cache"
-	rm -rf "$bbbs_opt_path" "$dir_cache"
+	echo "-- Removing executable"
+	rm -rf "$bbbs_opt_path"
 
 	echo "-- Removing sudoers rules"
 	if [ -f "/etc/sudoers.d/${bbbs_prog_name}" ]; then
 		rm -f "/etc/sudoers.d/${bbbs_prog_name}"
 	else
 		echo " > /etc/sudoers.d/${bbbs_prog_name} wasn't found, please check BBBS related entries are removed"
+	fi
+
+	# That's only on the server: on clients the cache is in user dir
+	if [ -d "$dir_cache" ]; then
+		echo "-- Removing cache"
+		rm -rf "$dir_cache"
 	fi
 }
 
