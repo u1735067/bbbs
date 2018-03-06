@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+bbbs_user_name=borg
+
 # Set en UTF-8 locale, see README.md for explanation about this
 lcutf8=0 # utf8 locale is not set
 unilocales=$(locale -a 2>/dev/null | grep -iE '\.utf-?8') # List UTF-8 locales
@@ -22,16 +24,18 @@ if [ $lcutf8 -eq 0 -a -n "$unilocales" ]; then # Still no utf8 locale prioritize
 fi
 unset -v unilocales
 
-borg_path=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
-borg_user=borg
+bbbs_opt_path=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
+bbbs_user_home=$(getent passwd "$bbbs_user_name" | cut -d: -f6)
+# https://borgbackup.readthedocs.io/en/stable/usage/general.html#environment-variables
+export BORG_BASE_DIR="$bbbs_user_home"
 
 # Allow hooks to be executed
-if [ "$1" = "create" -a -x ~$borg_user/backup-pre ]; then
-	~$borg_user/backup-pre
+if [ "$1" = "create" -a -x "${bbbs_user_home}/backup-pre" ]; then
+	"${bbbs_user_home}/backup-pre"
 fi
 
-$borg_path/borg.bin "$@"
+"${bbbs_opt_path}/borg.bin" "$@"
 
-if [ "$1" = "create" -a -x ~$borg_user/backup-post ]; then
-	~$borg_user/backup-post
+if [ "$1" = "create" -a -x "${bbbs_user_home}/backup-post" ]; then
+	"${bbbs_user_home}/backup-post"
 fi

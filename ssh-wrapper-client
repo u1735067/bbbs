@@ -12,5 +12,5 @@ elif [ "$1" == '-t' -o "$1" == '--tcp' ]; then
   #fi
   exec socat STDIO TCP-CONNECT:"$host":"$2"
 else
-  echo "unknown method"
+  echo "$0: unknown method"
 fi

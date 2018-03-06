@@ -1,7 +1,7 @@
-Bash [Borg](https://www.borgbackup.org/) Backup Server
-======================================================
+Bash [Borg](https://www.borgbackup.org/) Backup System (BBBS)
+=============================================================
 [Borg](https://github.com/borgbackup/borg) wrappers for server [pull mode](https://github.com/borgbackup/borg/issues/900).
-As distributions repositories may not always be updated, it is designed to work with the standalone version, installed in `/opt/borg`.
+As distributions repositories may not always be updated, it is designed to work with the standalone version, installed in `/opt/bbbs`.
 
 Requirement
 -----------
@@ -13,29 +13,29 @@ Requirement
 
 Instructions
 ------------
-You can `git clone https://github.com/Alex131089/bbbs` in `/opt/borg/` and run the installer.\
+You can `git clone https://github.com/Alex131089/bbbs` in `/opt/bbbs/` and run the installer.\
 Obviously, you have to edit `do-backup.example` according to your needs.\
 borg's dot path are symlinked to more accessible paths (`.cache/borg -> ~/cache`, `.config/borg -> ~/` (will expose `keys` and `security` directly), `.ssh -> ssh`).
 
 ```
 client> apt-get update && apt-get install git sudo socat curl jq
-client> git clone git@github.com:Alex131089/bbbs.git /opt/borg
-client> borg/installer.sh install-client
+client> git clone git@github.com:Alex131089/bbbs.git /opt/bbbs
+client> /opt/bbbs/installer.sh install-client
 
 server> yum install git sudo socat curl jq
-server> git clone git@github.com:Alex131089/bbbs.git /opt/borg
-server> borg/installer.sh install-server
+server> git clone git@github.com:Alex131089/bbbs.git /opt/bbbs
+server> /opt/bbbs/installer.sh install-server
 
-server> /opt/borg/ssh-gen-copy-key -g -k server-name_hypervisor -c -u borg -- root@server-name -p 22
-server> gw_key=~borg/ssh/key_server-name_hypervisor; /opt/borg/ssh-gen-copy-key -g -k server-name_vm-1 -c -u borg -- root@172.16.0.1 -p 22 -o ProxyCommand="ssh -i$gw_key -W %h:%p server-name.fqdn -p 22"
+server> /opt/bbbs/ssh-gen-copy-key -g -k server-name_hypervisor -c -u borg -- root@server-name -p 22
+server> gw_key=~borg/ssh/key_server-name_hypervisor; /opt/bbbs/ssh-gen-copy-key -g -k server-name_vm-1 -c -u borg -- root@172.16.0.1 -p 22 -o ProxyCommand="ssh -i$gw_key -W %h:%p server-name.fqdn -p 22"
 
-server> /opt/borg/borg init -e authenticated-blake2 /srv/borg/server-name/hypervisor
-server> /opt/borg/borg init -e authenticated-blake2 /srv/borg/server-name/vm-1
+server> /opt/bbbs/borg init -e authenticated-blake2 /srv/borg/server-name/hypervisor
+server> /opt/bbbs/borg init -e authenticated-blake2 /srv/borg/server-name/vm-1
 
-server> sudo -u borg /opt/borg/do-backup
+server> sudo -u borg /opt/bbbs/do-backup
 ```
 
-`borg-client` will call `~borg/backup-pre` and `~borg/backup-pre` on the client before and after running `borg create`, you can use them to dump a sql database and remove it for example.
+`bbbs-client` will call `~borg/backup-pre` and `~borg/backup-pre` on the client before and after running `borg create`, you can use them to dump a sql database and remove it for example.
 
 To manage ssh connexion parameters, you can also use `ssh_config` instead, for example:
 ```
@@ -58,7 +58,7 @@ Diagram
 ╔══════╦════════════════════════════════════════════════════╦══════════════════════════════════════════════════════════════╗
 ║      ║                       Server                       ║                            Client                            ║
 ╠══════╬════════════════════════════════════════════════════╬══════════════════════════════════════════════════════════════╣
-║ root ║  sudo                                              ║            borg-client ─┬─► ~borg/backup-pre                 ║
+║ root ║  sudo                                              ║            bbbs-client ─┬─► ~borg/backup-pre                 ║
 ║      ║    │                                               ║              ▲          ├─► borg create ─► wrapper ─► socat  ║
 ║      ║    │                                               ║              │          └─► ~borg/backup-post           │    ║
 ║      ║    │                                               ║              │                                          │    ║
@@ -133,15 +133,15 @@ service splunk start
 echo "- Starting Splunk ... Done"
 ```
 
-Why ?
------
+Why?
+----
 While [`Borg Backup Server`](http://www.borgbackupserver.com/) (BBS) has been [announced](https://github.com/borgbackup/borg/issues/2960#issuecomment-341742078), it is [not available yet](https://github.com/marcpope/bbs) and I needed a solution (preferably before my server crashes). Also, I don't want the clients to have to know how to reach the server.
 This is ugly but probably the simplest for now (when using pull mode).
 A correct solution could be to use `python` as wrapper, with `libssh` to setup the channel, and parsing nice configuration files.
 
 Locale correction explanation
 -----------------------------
-The wrappers `borg` and `borg-client` will try to set a correct locale (meaning: with `UTF-8` charset).
+The wrappers `borg` and `bbbs-client` will try to set a correct locale (meaning: with `UTF-8` charset).
 
 ### Why? 
 Because Python relies on it to read filenames correctly. Most filesystems seems to only care about `bytes`, but the [convention is to use UTF-8](https://unix.stackexchange.com/questions/2089/what-charset-encoding-is-used-for-filenames-and-paths-on-linux) and most locales without the charset specifier (`.utf8`) doesn't not use UTF-8, so Python use that charset and fails to decode filenames properly.
@@ -161,7 +161,7 @@ More informations (about this mess):
 ### How?
 To do so, it'll parse locales by priority (`LC_ALL` > `LC_CTYPE` > `LANG`), testing if it's indicating `UTF-8` charset, or if it's not trying to find the `UTF-8` alternative of this locale, or ultimately unsetting it (to let the chance to lower priority locales).\
 If there's no locale left, it'll then try to see if there's any `UTF-8` locale available, setting `LC_CTYPE`, starting by `C`, English (`en_GB`, `en_US`, `en_*`) and ultimatly the first found.\
-In the end, if there's really no UTF-8 locale available, none of `LC_ALL`, `LC_CTYPE`, `LANG` should be set, thus triggering the [python 3 default UTF-8](https://docs.python.org/3/howto/unicode.html#unicode-filenames), but I wasn't able to reproduce this behavior:
+In the end, if there's really no `UTF-8` locale available, none of `LC_ALL`, `LC_CTYPE`, `LANG` should be set, thus triggering the [python 3 default `UTF-8`](https://docs.python.org/3/howto/unicode.html#unicode-filenames), but I wasn't able to reproduce this behavior:
 
 ```
 # export -n LC_ALL LC_CTYPE LANG; python3 -c 'import sys; print(sys.version); print(sys.getfilesystemencoding())'

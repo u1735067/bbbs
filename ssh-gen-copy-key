@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+bbbs_user_name=borg
+bbbs_user_home=$(getent passwd "$bbbs_user_name" | cut -d: -f6)
+
 usage() {
 	echo "usage: $0 [-h|--help] [-g|--generate] -k|--key-name host_key_name [-c|--copy -u|--user user_to_add_key] -- ssh_arguments"
 	exit
@@ -49,19 +52,19 @@ if [ -z ${KEY_NAME:+x} -o '(' ! -z ${COPY_USER:+x} -a -z ${@:+x} ')' ]; then
 	usage
 fi
 
-pushd ~borg > /dev/null
+pushd "$bbbs_user_home" > /dev/null
 
 if [ ${DO_GEN:-0} -eq 1 ]; then
 	echo "-- Generating key pair"
 	# https://security.stackexchange.com/questions/50878/ecdsa-vs-ecdh-vs-ed25519-vs-curve25519
 	#ssh-keygen -b 4096 -C "Borg server ($(hostname))"
 	ssh-keygen -t ed25519 -N '' -C "Borg server ($(hostname --fqdn))" -f "ssh/key_${KEY_NAME}"
-	chown --recursive --reference ~borg "ssh/"
+	chown --recursive --reference "$bbbs_user_home" "ssh/"
 fi
 if [ ${DO_COPY:-0} -eq 1 ]; then
 	echo "-- Adding public key to authorized_keys on client (for user $COPY_USER)"
 	# https://github.com/andrewpile/ssh-copy-id/blob/master/ssh-copy-id
-	cat "ssh/key_${KEY_NAME}.pub" | ssh -F ~borg/ssh/config -o UserKnownHostsFile=~borg/ssh/known_hosts "$@" -- \
+	cat "ssh/key_${KEY_NAME}.pub" | ssh -F "${bbbs_user_home}/ssh/config" -o UserKnownHostsFile="${bbbs_user_home}/ssh/known_hosts" "$@" -- \
 		"umask 077 ;" \
 		"if [ ! -d ~$COPY_USER ]; then echo 'Home for $COPY_USER not found'; exit 1; fi;" \
 		"cd ~$COPY_USER; test -d .ssh || mkdir .ssh ;" \
@@ -69,7 +72,7 @@ if [ ${DO_COPY:-0} -eq 1 ]; then
 		"chown --recursive --reference ~$COPY_USER .ssh ;" \
 		"echo Ok"
 	
-	chown --recursive --reference ~borg "ssh/known_hosts"
+	chown --recursive --reference "$bbbs_user_home" "ssh/known_hosts"
 fi
 
 popd > /dev/null

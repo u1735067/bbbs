@@ -1,33 +1,34 @@
 #!/usr/bin/env bash
 
-# Set en UTF-8 locale, see README.md for explanation about this
-lcutf8=0 # utf8 locale is not set
-unilocales=$(locale -a 2>/dev/null | grep -iE '\.utf-?8') # List UTF-8 locales
-for env in 'LC_ALL' 'LC_CTYPE' 'LANG'; do # LC_ALL > LC_CTYPE > LANG ; LANGUAGE is for gettext
-	if [ -n "${!env:+x}" ]; then # Is defined & not null
-		(echo "${!env}" | grep -iE '\.utf-?8' > /dev/null) && lcutf8=1 && break # If it's utf8 already, we're done
-		if [ -n "$unilocales" ]; then # If we have somewhere to search
-			simple=$(echo "${!env}" | cut -d'.' -f1 | cut -d'@' -f1)
-			found=$(echo "$unilocales" | grep -im1 "^${simple}\.") # Look for an utf8 alternative
-			[ -n "$found" ] && export "${env}=${found}" && lcutf8=2 && break # Set it and done
-		fi
-		export -n "$env" # Otherwise remove this non-utf8 higher priority
-	fi
-done
-if [ $lcutf8 -eq 0 -a -n "$unilocales" ]; then # Still no utf8 locale prioritized, all non-utf8 locales are now unset
-	for try in '^C\.' '^en_GB\.' '^en_US\.' '^en_' ''; do # So last try .. C, then English, then first available
-		found=$(echo "$unilocales" | grep -im1 "$try")
-		[ -n "$found" ] && export LC_CTYPE="$found" && lcutf8=3 && break
-	done
-fi
-unset -v unilocales
+bbbs_user_name=borg
 
-borg_path=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
-borg_user=borg
+bbbs_opt_path=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
 
-if [ "$(id --user --name)" != "$borg_user" ]; then # logname / whoami
-	echo "Executing as $borg_user"
-	exec sudo -u $borg_user $borg_path/borg.bin "$@"
+if [ "$(id --user --name)" != "$bbbs_user_name" ]; then # logname / whoami
+	echo "Reexecuting as ${bbbs_user_name}"
+	exec sudo -u "$bbbs_user_name" "${bbbs_opt_path}/${0}" "$@"
 else
-	exec $borg_path/borg.bin "$@"
+	# Set en UTF-8 locale, see README.md for explanation about this
+	lcutf8=0 # utf8 locale is not set
+	unilocales=$(locale -a 2>/dev/null | grep -iE '\.utf-?8') # List UTF-8 locales
+	for env in 'LC_ALL' 'LC_CTYPE' 'LANG'; do # LC_ALL > LC_CTYPE > LANG ; LANGUAGE is for gettext
+		if [ -n "${!env:+x}" ]; then # Is defined & not null
+			(echo "${!env}" | grep -iE '\.utf-?8' > /dev/null) && lcutf8=1 && break # If it's utf8 already, we're done
+			if [ -n "$unilocales" ]; then # If we have somewhere to search
+				simple=$(echo "${!env}" | cut -d'.' -f1 | cut -d'@' -f1)
+				found=$(echo "$unilocales" | grep -im1 "^${simple}\.") # Look for an utf8 alternative
+				[ -n "$found" ] && export "${env}=${found}" && lcutf8=2 && break # Set it and done
+			fi
+			export -n "$env" # Otherwise remove this non-utf8 higher priority
+		fi
+	done
+	if [ $lcutf8 -eq 0 -a -n "$unilocales" ]; then # Still no utf8 locale prioritized, all non-utf8 locales are now unset
+		for try in '^C\.' '^en_GB\.' '^en_US\.' '^en_' ''; do # So last try .. C, then English, then first available
+			found=$(echo "$unilocales" | grep -im1 "$try")
+			[ -n "$found" ] && export LC_CTYPE="$found" && lcutf8=3 && break
+		done
+	fi
+	unset -v unilocales
+
+	exec "${bbbs_opt_path}/borg.bin" "$@"
 fi
