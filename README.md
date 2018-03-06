@@ -14,7 +14,7 @@ Requirement
 Instructions
 ------------
 You can `git clone https://github.com/Alex131089/bbbs` in `/opt/bbbs/` and run the installer.\
-Obviously, you have to edit `do-backup.example` according to your needs.\
+Obviously, you have to create `do-backup` from `do-backup.example` according to your needs and mark it as executable (`chmod +x /opt/bbbs/do-backup`).\
 borg's dot path are symlinked to more accessible paths (`.cache/borg -> ~/cache`, `.config/borg -> ~/` (will expose `keys` and `security` directly), `.ssh -> ssh`).
 
 ```
