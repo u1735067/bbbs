@@ -75,9 +75,12 @@ bbbs_install_client() {
 	fi
 	mkdir "${dir_home}/.config" "${dir_home}/.cache" "${dir_home}/.ssh" "$dir_cache"
 	echo "$cache_tag_content" > "${dir_cache}/${cache_tag_name}"
-	ln -s "$dir_conf" "${dir_home}/.config/borg"
-	ln -s "$dir_cache" "${dir_home}/.cache/borg"
-	ln -s "${dir_home}/.ssh" "${dir_home}/ssh"
+	ln -s "../" "${dir_home}/.config/borg"
+	#ln -s "$dir_conf" "${dir_home}/.config/borg"
+	ln -s "../cache/" "${dir_home}/.cache/borg"
+	#ln -s "$dir_cache" "${dir_home}/.cache/borg"
+	ln -s ".ssh/" "${dir_home}/ssh"
+	#ln -s "${dir_home}/.ssh" "${dir_home}/ssh"
 	#chown --reference "$dir_home" $borg_bin
 	chmod --recursive go-rwx "$dir_home"
 	chown --recursive --reference "$dir_home" "$dir_home"
@@ -124,9 +127,11 @@ bbbs_install_server() {
 	fi
 	mkdir "${dir_home}/.config" "${dir_home}/.cache" "${dir_home}/.ssh" "$dir_cache"
 	echo "$cache_tag_content" > "${dir_cache}/${cache_tag_name}"
-	ln -s "$dir_conf" "${dir_home}/.config/borg"
+	ln -s "../" "${dir_home}/.config/borg"
+	#ln -s "$dir_conf" "${dir_home}/.config/borg"
 	ln -s "$dir_cache" "${dir_home}/.cache/borg"
-	ln -s "${dir_home}/.ssh" "${dir_home}/ssh"
+	ln -s ".ssh/" "${dir_home}/ssh"
+	#ln -s "${dir_home}/.ssh" "${dir_home}/ssh"
 	chmod --recursive go-rwx "$dir_home" "$dir_cache"
 	chown --recursive --reference "$dir_home" "$dir_home" "$dir_cache"
 	#chown --reference "$dir_home" $borg_bin
