@@ -8,8 +8,9 @@ Features
  * Provide pull mode in one command on the server; the wrappers will take care of the required sub-commands
    * One connection, from the server to the client
      * Clients doesn't have to know server's address
-     * Datas are sent through an SSH channel
-   * TCP or Unix socket
+     * Datas are sent back to the server through a SSH channel
+   	   * TCP or Unix socket
+   	 * Note: `borg serve` process is not reused, 1 backup = 1 client = 1 wrapper call = 1 serve
    * Call pre and post backup hooks on the client
  * Provide an admin wrapper to start borg with the right user (not to mess with file ownership)
  * As the created user is dedicated to borg, configuration files are exposed, and redirected via symlinks for borg
