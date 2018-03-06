@@ -6,7 +6,7 @@ bbbs_opt_path=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
 
 if [ "$(id --user --name)" != "$bbbs_user_name" ]; then # logname / whoami
 	echo "Reexecuting as ${bbbs_user_name}"
-	exec sudo -u "$bbbs_user_name" "${bbbs_opt_path}/${0}" "$@"
+	exec sudo -u "$bbbs_user_name" "${bbbs_opt_path}/$(basename $BASH_SOURCE)" "$@"
 else
 	# Set an UTF-8 locale, see README.md for explanation about this
 	lcutf8=0 # utf8 locale is not set

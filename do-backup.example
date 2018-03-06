@@ -49,7 +49,7 @@ hypervisor() {
 
 	"${bbbs_opt_path}/ssh-wrapper-server" -t 12345 12345 "${bbbs_opt_path}/ssh-wrapper-client" "$host -p $port -oBatchMode=yes -i$ssh_key" \
 		sudo "${bbbs_opt_path}/bbbs-client" create \
-			--show-version --show-rc --verbose --list --stats --one-file-system --exclude-caches --keep-exclude-tags \
+			--show-version --show-rc --verbose --list --stats --one-file-system --exclude-nodump --exclude-caches --keep-exclude-tags \
 			$COMMON_EXCLUDE $VOLATILE_EXCLUDE \
 			--exclude /var/lib/lxcfs/ \
 			--exclude /var/lib/vz/images/ \
@@ -70,7 +70,7 @@ vm_1() {
 
 	"${bbbs_opt_path}/ssh-wrapper-server" -t 12346 12346 "${bbbs_opt_path}/ssh-wrapper-client" "$host -p $port -oBatchMode=yes -i$ssh_key" \
 		sudo "${bbbs_opt_path}/bbbs-client" create \
-			--show-version --show-rc --verbose --list --stats --one-file-system --exclude-caches --keep-exclude-tags \
+			--show-version --show-rc --verbose --list --stats --one-file-system --exclude-nodump --exclude-caches --keep-exclude-tags \
 			$COMMON_EXCLUDE $VOLATILE_EXCLUDE \
 			ssh://backup-server/./::{utcnow:%Y-%m-%d} \
 			$COMMON_TARGET \
