@@ -8,7 +8,7 @@ if [ "$(id --user --name)" != "$bbbs_user_name" ]; then # logname / whoami
 	echo "Reexecuting as ${bbbs_user_name}"
 	exec sudo -u "$bbbs_user_name" "${bbbs_opt_path}/${0}" "$@"
 else
-	# Set en UTF-8 locale, see README.md for explanation about this
+	# Set an UTF-8 locale, see README.md for explanation about this
 	lcutf8=0 # utf8 locale is not set
 	unilocales=$(locale -a 2>/dev/null | grep -iE '\.utf-?8') # List UTF-8 locales
 	for env in 'LC_ALL' 'LC_CTYPE' 'LANG'; do # LC_ALL > LC_CTYPE > LANG ; LANGUAGE is for gettext
