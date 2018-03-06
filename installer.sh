@@ -19,11 +19,11 @@ Signature: 8a477f597d28d172789f06886806bc55
 #       http://www.brynosaurus.com/cachedir/
 "
 
-bbbs_retrieve_check() {
+_bbbs_retrieve_check() {
 	# Check if required commands are present
-	if [ ! $(command -v curl) ]; then echo "ERROR: curl is missing"; exit 1; fi
-	if [ ! $(command -v jq) ]; then echo "ERROR: jq is missing"; exit 1; fi
-	if [ ! $(command -v gpg) ]; then echo "ERROR: gpg is missing"; exit 1; fi
+	if [ ! $(command -v curl) ]; then echo "ERROR: curl is missing"; return 1; fi
+	if [ ! $(command -v jq) ]; then echo "ERROR: jq is missing"; return 1; fi
+	if [ ! $(command -v gpg) ]; then echo "ERROR: gpg is missing"; return 1; fi
 
 	tmpdir=$(mktemp --directory)
 	pushd "$tmpdir" > /dev/null
@@ -41,7 +41,7 @@ bbbs_retrieve_check() {
 	sig_valid=$?
 	if [ ! $sig_valid -eq 0 ]; then
 		echo "Binary signature could not be verified (files are left in $tmpdir)."
-		exit
+		return 1
 	fi
 
 	echo "-- Moving executable"
@@ -51,10 +51,24 @@ bbbs_retrieve_check() {
 	chmod +x "$borg_bin"
 	popd > /dev/null
 	rm -rf "$tmpdir"
+
+	return 0
+}
+
+bbbs_retrieve_check() {
+	if ! _bbbs_retrieve_check || [ ! -x "borg_bin" ]; then
+		echo "The script failed to retrieve or verify borg binary, you'll have to do it yourself, or you can abort and retry"
+		read -rn1 -p "Do you want to continue? [yN]: " skip_bin
+		echo
+		if ! [ "$skip_bin" = 'y' -o "$skip_bin" = 'Y' ]; then
+			exit 1
+		fi
+	fi
 }
 
 bbbs_install_client() {
 	echo "- Installing BBBS (client)"
+	
 	# Ideally, the server version should be pushed
 	bbbs_retrieve_check
 
@@ -114,6 +128,7 @@ bbbs_install_server() {
 	#dir_security="$dir_conf"/security
 
 	echo "- Installing BBBS (server)"
+
 	bbbs_retrieve_check
 
 	echo "-- Creating user"
@@ -161,7 +176,14 @@ EOF
 
 bbbs_update() {
 	echo "- Updating BBBS"
+
+	echo "-- Pulling scripts"
+	pushd $(cd -P -- "$(dirname -- "$0")" && pwd -P) > /dev/null
+	git pull
+	popd
+
 	bbbs_retrieve_check
+
 	echo "- Done."
 }
 

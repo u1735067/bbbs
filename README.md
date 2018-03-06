@@ -9,7 +9,7 @@ Requirement
  * sudo
  * socat
  * git, to retrieve thoses scripts
- * curl, jq, gpg, to retrieve and verify borg binaries
+ * curl, jq, gpg, to retrieve and verify borg binary (optional, but you'll have to provide it after install)
 
 Instructions
 ------------
