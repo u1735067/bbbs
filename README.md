@@ -142,6 +142,13 @@ See [Backup indexed data](http://docs.splunk.com/Documentation/Splunk/latest/Ind
 ```bash
 #!/usr/bin/env bash
 
+echo "- Dumping Splunk ..."
+mkdir --parents /var/backups/splunk
+/opt/splunk/bin/splunk search "index=*" -output json -maxout 0 \
+   | gzip --fast --rsyncable \
+   > /var/backups/splunk/borg-dump_$(date --utc "+%Y-%m-%d_%H.%M.%SZ").json.gz
+echo "- Dumping Splunk ... Done"
+
 echo "- Stopping Splunk ..."
 service splunk stop
 #systemctl stop splunk
@@ -151,6 +158,10 @@ echo "- Stopping Splunk ... Done"
 `~borg/backup-post`:
 ```bash
 #!/usr/bin/env bash
+
+echo "- Removing Splunk Dump ..."
+rm -f /var/backups/splunk/borg-*
+echo "- Removing Splunk Dump ... Done"
 
 echo "- Starting Splunk ..."
 service splunk start # || mail failed to restart service, check ASAP

@@ -30,6 +30,8 @@ if [ "$(id --user --name)" != "$bbbs_user_name" ]; then
 fi
 bbbs_user_home=$(getent passwd "$bbbs_user_name" | cut -d: -f6)
 bbbs_opt_path=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
+log_prefix="${bbbs_user_home}/logs/"$(date --utc "+%Y-%m")
+mkdir --parent "${log_prefix}"
 
 pushd "$bbbs_user_home" > /dev/null
 
@@ -45,7 +47,7 @@ hypervisor() {
 	host=server-name.fqdn
 	port=22
 	ssh_key="${bbbs_user_home}/ssh/key_server-name_hypervisor"
-	log_file="${bbbs_user_home}/logs/"$(date --utc "+%Y-%m-%d_%H.%M.%SZ")"_$host.log"
+	log_file="${log_prefix}/"$(date --utc "+%Y-%m-%d_%H.%M.%SZ")"_$host.log"
 
 	"${bbbs_opt_path}/ssh-wrapper-server" -t 12345 12345 "${bbbs_opt_path}/ssh-wrapper-client" "$host -p $port -oBatchMode=yes -i$ssh_key" \
 		sudo "${bbbs_opt_path}/bbbs-client" create \
@@ -66,7 +68,7 @@ vm_1() {
 	host=172.16.0.1
 	port=22
 	ssh_key="${bbbs_user_home}/ssh/key_server-name_vm-1"
-	log_file="${bbbs_user_home}/logs/"$(date --utc "+%Y-%m-%d_%H.%M.%SZ")"_$host.log"
+	log_file="${log_prefix}/"$(date --utc "+%Y-%m-%d_%H.%M.%SZ")"_$host.log"
 
 	"${bbbs_opt_path}/ssh-wrapper-server" -t 12346 12346 "${bbbs_opt_path}/ssh-wrapper-client" "$host -p $port -oBatchMode=yes -i$ssh_key" \
 		sudo "${bbbs_opt_path}/bbbs-client" create \
