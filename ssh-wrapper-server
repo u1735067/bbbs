@@ -50,13 +50,13 @@ else
 	if [ "$1" == '-s' -o "$1" == '--socket' ]; then
 		print_args_exec socat UNIX-LISTEN:"$2" "EXEC:${serve_cmd}" &
 		socat_pid=$!
-		print_args_exec ssh -R "$2":"$3" $5 "$SSH_ARGS" "BORG_RSH=\"$4 -s $3\"" "BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK=yes" "${@:6}"
+		print_args_exec ssh -R "$2":"$3" $5 "$SSH_ARGS" export "BORG_RSH=\"$4 -s $3\"" "BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK=yes" ";" "${@:6}"
 		[ "$BORGW_DRYRUN" == "1" ] || kill "$socat_pid" 2>/dev/null
 	elif [ "$1" == '-t' -o "$1" == '--tcp' ]; then
 		host=localhost
 		print_args_exec socat TCP-LISTEN:"$2" "EXEC:${serve_cmd}" &
 		socat_pid=$!
-		print_args_exec ssh -R "$2":"$host":"$3" $5 "$SSH_ARGS" "BORG_RSH=\"$4 -t $3\"" "BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK=yes" "${@:6}"
+		print_args_exec ssh -R "$2":"$host":"$3" $5 "$SSH_ARGS" export "BORG_RSH=\"$4 -t $3\"" "BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK=yes" ";" "${@:6}"
 		[ "$BORGW_DRYRUN" == "1" ] || kill "$socat_pid" 2>/dev/null
 	else
 		echo "$0: unknown method"

@@ -30,12 +30,11 @@ bbbs_user_home=$(getent passwd "$bbbs_user_name" | cut -d: -f6)
 export BORG_BASE_DIR="$bbbs_user_home"
 
 # Allow hooks to be executed
-if [ "$1" = "create" -a -x "${bbbs_user_home}/backup-pre" ]; then
-	"${bbbs_user_home}/backup-pre"
-fi
+[ "$1" = "create" -a -x "${bbbs_user_home}/backup-pre" ] && "${bbbs_user_home}/backup-pre"
+[ "$1" = "create-stdin" -a -x "${bbbs_user_home}/backup-pre-stdin" ] && "${bbbs_user_home}/backup-pre-stdin"
 
-"${bbbs_opt_path}/borg.bin" "$@"
+[ "$1" = "create-stdin" ] && cmd=create || cmd="$1"
+"${bbbs_opt_path}/borg.bin" "$cmd" "${@:2}"
 
-if [ "$1" = "create" -a -x "${bbbs_user_home}/backup-post" ]; then
-	"${bbbs_user_home}/backup-post"
-fi
+[ "$1" = "create" -a -x "${bbbs_user_home}/backup-post" ] && "${bbbs_user_home}/backup-post"
+[ "$1" = "create-stdin" -a -x "${bbbs_user_home}/backup-post-stdin" ] && "${bbbs_user_home}/backup-post-stdin"

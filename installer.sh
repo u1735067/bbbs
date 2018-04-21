@@ -105,7 +105,7 @@ bbbs_install_client() {
 	sudo_rules="\
 # BBBS client
 Defaults:${bbbs_user_name} env_keep += \"BORG_*\"
-${bbbs_user_name} ALL=(root,backup : root,backup) NOPASSWD: /opt/${bbbs_prog_name}/bbbs-client create *
+${bbbs_user_name} ALL=(root,backup : root,backup) NOPASSWD: /opt/${bbbs_prog_name}/bbbs-client create*
 "
 	if [ -d "/etc/sudoers.d" -a ! -e "/etc/sudoers.d/${bbbs_prog_name}" ]; then
 		echo "$sudo_rules" > "/etc/sudoers.d/${bbbs_prog_name}"

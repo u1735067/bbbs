@@ -79,8 +79,28 @@ vm_1() {
 				2>&1 | tee $log_file
 }
 
+vm_1_stdin() {
+	export BORGW_RESTRICT_REPOSITORY=/srv/borg/server-name/vm-1
+	gw_key=~/ssh/key_server-name_hypervisor
+	export SSH_ARGS="-o ProxyCommand=ssh -i$gw_key -W %h:%p server-name.fqdn -p 22"
+
+	host=172.16.0.1
+	port=22
+	ssh_key="${bbbs_user_home}/ssh/key_server-name_vm-1"
+	log_file="${log_prefix}/"$(date --utc "+%Y-%m-%d_%H.%M.%SZ")"_$host_my-export.log"
+
+	"${bbbs_opt_path}/ssh-wrapper-server" -t 12347 12347 "${bbbs_opt_path}/ssh-wrapper-client" "$host -p $port -oBatchMode=yes -i$ssh_key" \
+		my_export_cmd cmd_arg1 cmd_arg2 "|" \
+			sudo "${bbbs_opt_path}/bbbs-client" create-stdin \
+				--show-version --show-rc --verbose --list --stats \
+				--stdin-name out-name.ext \
+				"ssh://backup-server/./::{utcnow:%Y-%m-%d}_my-export" - \
+					2>&1 | tee $log_file
+}
+
 #hypervisor
 #vm_1
+#vm_1_stdin
 
 # Pass the host (=function) to backup as argument to the script
 echo "------ Backups to process: $@"
