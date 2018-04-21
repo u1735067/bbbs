@@ -41,11 +41,11 @@ borg's dot path are symlinked to more accessible paths (`.cache/borg -> ~/cache`
 
 ```
 client> apt-get update && apt-get install git sudo socat curl jq
-client> git clone git@github.com:Alex131089/bbbs.git /opt/bbbs
+client> git clone https://github.com/Alex131089/bbbs.git /opt/bbbs
 client> /opt/bbbs/installer.sh install-client
 
 server> yum install git sudo socat curl jq
-server> git clone git@github.com:Alex131089/bbbs.git /opt/bbbs
+server> git clone https://github.com/Alex131089/bbbs.git /opt/bbbs
 server> /opt/bbbs/installer.sh install-server
 
 server> /opt/bbbs/ssh-gen-copy-key --generate --key-name server-name_hypervisor --copy --user borg -- root@server-name -p 22
@@ -122,7 +122,9 @@ password=secret
 echo "- Dumping MySQL ..."
 mkdir --parents /var/backups/mysql
 # GZip directly in case the database is huge -- could be handled by borg using stdin maybe
-mysqldump --all-databases --single-transaction | gzip --fast --rsyncable > /var/backups/mysql/borg-dump_$(date --utc "+%Y-%m-%d_%H.%M.%SZ").sql.gz
+mysqldump --all-databases --single-transaction \
+	| gzip --fast --rsyncable \
+	> /var/backups/mysql/borg-dump_$(date --utc "+%Y-%m-%d_%H.%M.%SZ").sql.gz
 echo "- Dumping MySQL ... Done"
 ```
 
@@ -145,8 +147,8 @@ See [Backup indexed data](http://docs.splunk.com/Documentation/Splunk/latest/Ind
 echo "- Dumping Splunk ..."
 mkdir --parents /var/backups/splunk
 /opt/splunk/bin/splunk search "index=*" -output json -maxout 0 \
-   | gzip --fast --rsyncable \
-   > /var/backups/splunk/borg-dump_$(date --utc "+%Y-%m-%d_%H.%M.%SZ").json.gz
+	| gzip --fast --rsyncable \
+	> /var/backups/splunk/borg-dump_$(date --utc "+%Y-%m-%d_%H.%M.%SZ").json.gz
 echo "- Dumping Splunk ... Done"
 
 echo "- Stopping Splunk ..."
