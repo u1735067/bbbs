@@ -65,14 +65,14 @@ To manage ssh connexion parameters, you can also use `ssh_config` instead, for e
 ```
 server> cat ~borg/ssh/config
 Host *
-        User borg
+	User borg
 
 Host server-name
-        Port 22
-        IdentityFile ~borg/ssh/key_server-name_hypervisor
+	Port 22
+	IdentityFile ~borg/ssh/key_server-name_hypervisor
 
 Host 172.16.*.*
-        ProxyCommand ssh -F ~borg/ssh/config -W %h:%p server-name
+	ProxyCommand ssh -F ~borg/ssh/config -W %h:%p server-name
 ```
 
 
