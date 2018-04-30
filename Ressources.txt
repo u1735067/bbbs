@@ -70,3 +70,15 @@ https://stackoverflow.com/questions/192319/how-do-i-know-the-script-file-name-in
 
 https://arstechnica.com/civis/viewtopic.php?t=107145
 https://stackoverflow.com/questions/9522631/how-to-put-a-line-comment-for-a-multi-line-command
+
+--
+
+https://github.com/stedolan/jq/issues/596
+http://hyperpolyglot.org/json
+https://unix.stackexchange.com/questions/13731/is-there-a-way-to-get-the-min-max-median-and-average-of-a-list-of-numbers-in
+https://stackoverflow.com/questions/39359651/chain-select-and-max-by-on-json-doc-with-jq-in-bash
+https://github.com/stedolan/jq/issues/708
+
+https://stackoverflow.com/questions/3141738/duplicating-stdout-to-stderr
+
+--

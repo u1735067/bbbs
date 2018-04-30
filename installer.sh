@@ -3,6 +3,7 @@
 bbbs_user_name=borg
 bbbs_prog_name=bbbs
 
+#borg_branch=1.1.
 borg_exec=borg-linux64
 borg_exec_sig=borg-linux64.asc
 
@@ -29,17 +30,25 @@ _bbbs_retrieve_check() {
 	pushd "$tmpdir" > /dev/null
 
 	echo "-- Retrieving binary & signature"
-	curl --silent --show-error https://api.github.com/repos/borgbackup/borg/releases/latest \
-		| jq --raw-output '.assets[] | select(.name as $asset | ["'$borg_exec'", "'$borg_exec_sig'"] | index($asset)) | .browser_download_url' \
+	# "Tagged Latest release", to use with https://api.github.com/repos/borgbackup/borg/releases/latest
+	#jq_filter='.assets[] | select(.name as $asset | ["'$borg_exec'", "'$borg_exec_sig'"] | index($asset)) | .browser_download_url'
+	# "Last version number in branch"
+	#jq_filter='[.[] | select((.prerelease or .draft | not) and (.tag_name | startswith("'$borg_branch'")))]
+	#			| max_by(.tag_name | split(".") | map(tonumber)) | .assets[]
+	#			| select(.name as $asset | ["'$borg_exec'", "'$borg_exec_sig'"] | index($asset)) | .browser_download_url'
+	# "Last version number"
+	jq_filter='[.[] | select(.prerelease or .draft | not)] | max_by(.tag_name | split(".") | map(tonumber)) | .assets[] '"\
+				"'| select(.name as $asset | ["'$borg_exec'", "'$borg_exec_sig'"] | index($asset)) | .browser_download_url'
+	curl --silent --show-error "https://api.github.com/repos/borgbackup/borg/releases" \
+		| jq --raw-output "$jq_filter" 2>/dev/null | while read url; do echo $url; echo $url >&2; done \
 		| xargs curl --location --remote-name-all # --progress-bar could be used too
 
 	echo "-- Checking signature"
-
 	# https://borgbackup.readthedocs.io/en/stable/support.html
-	gpg --homedir "$tmpdir" --no-default-keyring --quiet --batch --keyid-format 0xlong --keyserver pgp.mit.edu --recv-keys 6D5BEF9ADD2075805747B70F9F88FB52FAF7B393
+	# https://superuser.com/questions/227991/where-to-upload-pgp-public-key-are-keyservers-still-surviving
+	gpg --homedir "$tmpdir" --no-default-keyring --quiet --batch --keyid-format 0xlong --keyserver "hkp://pool.sks-keyservers.net" --recv-keys 0x6D5BEF9ADD2075805747B70F9F88FB52FAF7B393
 	gpg --homedir "$tmpdir" --no-default-keyring --quiet --batch --keyid-format 0xlong --trusted-key 0x9F88FB52FAF7B393 --verify "$borg_exec_sig" "$borg_exec"
-	sig_valid=$?
-	if [ ! $sig_valid -eq 0 ]; then
+	if [ ! $? -eq 0 ]; then
 		echo "Binary signature could not be verified (files are left in $tmpdir)."
 		return 1
 	fi
