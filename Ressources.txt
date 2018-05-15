@@ -82,3 +82,10 @@ https://github.com/stedolan/jq/issues/708
 https://stackoverflow.com/questions/3141738/duplicating-stdout-to-stderr
 
 --
+
+https://stackoverflow.com/questions/570984/how-can-i-gzip-standard-in-to-a-file-and-also-print-standard-in-to-standard-out
+https://stackoverflow.com/questions/11454343/pipe-output-to-bash-function
+https://www.tldp.org/LDP/abs/html/io-redirection.html
+
+--
+
