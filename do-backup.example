@@ -57,7 +57,7 @@ hypervisor() {
 			--exclude /var/lib/vz/images/ \
 			ssh://backup-server/./::{utcnow:%Y-%m-%d} \
 			$COMMON_TARGET /etc/pve \
-				2>&1 | tee $log_file
+				2>&1 | tee >(gzip --stdout > $log_file)
 }
 
 vm_1() {
