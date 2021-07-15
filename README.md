@@ -35,17 +35,17 @@ Requirement
 
 Instructions
 ------------
-One option is to `git clone https://github.com/Alex131089/bbbs` in `/opt/bbbs/` and run the installer.\
+One option is to `git clone` this repo in `/opt/bbbs/` and run the installer.\
 Obviously, you have to create `do-backup` from `do-backup.example` according to your needs and mark it as executable (`chmod +x /opt/bbbs/do-backup`).\
 borg's dot path are symlinked to more accessible paths (`.cache/borg -> ~/cache`, `.config/borg -> ~/` (to expose `keys` and `security` directly), `.ssh -> ssh`).
 
 ```
 client> apt-get update && apt-get install git sudo socat curl jq
-client> git clone https://github.com/Alex131089/bbbs.git /opt/bbbs
+client> git clone https://github.com/u1735067/bbbs.git /opt/bbbs
 client> /opt/bbbs/installer.sh install-client
 
 server> yum install git sudo socat curl jq
-server> git clone https://github.com/Alex131089/bbbs.git /opt/bbbs
+server> git clone https://github.com/u1735067/bbbs.git /opt/bbbs
 server> /opt/bbbs/installer.sh install-server
 
 server> /opt/bbbs/ssh-gen-copy-key --generate --key-name server-name_hypervisor --copy --user borg -- root@server-name -p 22
@@ -194,7 +194,7 @@ More informations (about this mess):
  * https://bugs.python.org/issue19846
  * https://bugs.python.org/issue19847
  * https://bugzilla.redhat.com/show_bug.cgi?id=902094
- * https://gist.github.com/Alex131089/8b4a7e346c040b09c5b8ac99951fda29
+ * https://gist.github.com/u1735067/8b4a7e346c040b09c5b8ac99951fda29
 
 ### How?
 To do so, it'll parse locales by priority (`LC_ALL` > `LC_CTYPE` > `LANG`), testing if it's indicating `UTF-8` charset, or if it's not trying to find the `UTF-8` alternative of this locale, or ultimately unsetting it (to let the chance to lower priority locales).\
